@@ -1,41 +1,39 @@
 """
-Custom Cloudinary storage backend.
-Bypasses django-cloudinary-storage and uses the Cloudinary SDK directly.
-This is more reliable and easier to debug.
+Custom Cloudinary storage backend with detailed logging.
 """
 import os
+import logging
 import cloudinary
 import cloudinary.uploader
 from django.core.files.storage import Storage
-from django.conf import settings
+
+logger = logging.getLogger(__name__)
 
 
 class CloudinaryMediaStorage(Storage):
-    """
-    Stores uploaded files on Cloudinary and returns proper URLs.
-    Falls back to Django's default file storage if Cloudinary
-    is not configured.
-    """
-
-    def _upload(self, name, content):
-        """Upload a file to Cloudinary and return the public_id."""
-        # Remove extension from name for public_id
-        folder = os.path.dirname(name)
-        filename = os.path.splitext(os.path.basename(name))[0]
-        public_id = f"{folder}/{filename}" if folder else filename
-
-        result = cloudinary.uploader.upload(
-            content,
-            public_id=public_id,
-            folder='aromallure',
-            overwrite=True,
-            resource_type='image',
-        )
-        return result['public_id']
 
     def _save(self, name, content):
-        public_id = self._upload(name, content)
-        return public_id
+        logger.warning(f"CloudinaryMediaStorage._save called: {name}")
+        try:
+            folder   = os.path.dirname(name)
+            filename = os.path.splitext(os.path.basename(name))[0]
+            public_id = f"aromallure/{folder}/{filename}" if folder else f"aromallure/{filename}"
+
+            logger.warning(f"Uploading to Cloudinary public_id: {public_id}")
+            logger.warning(f"Cloudinary cloud_name: {cloudinary.config().cloud_name}")
+            logger.warning(f"Cloudinary api_key set: {bool(cloudinary.config().api_key)}")
+
+            result = cloudinary.uploader.upload(
+                content,
+                public_id=public_id,
+                overwrite=True,
+                resource_type='image',
+            )
+            logger.warning(f"Upload SUCCESS: {result['secure_url']}")
+            return result['public_id']
+        except Exception as e:
+            logger.warning(f"Upload FAILED: {type(e).__name__}: {e}")
+            raise
 
     def url(self, name):
         if not name:
@@ -46,7 +44,7 @@ class CloudinaryMediaStorage(Storage):
         return f"https://res.cloudinary.com/{cloud}/image/upload/{name}"
 
     def exists(self, name):
-        return False  # Always allow overwrite
+        return False
 
     def delete(self, name):
         try:
