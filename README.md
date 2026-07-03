@@ -84,3 +84,4 @@ Built to be resilient and accessible:
 - Phase 6: Real payment processing (Stripe)
 - Email verification at signup
 # force rebuild
+trigger migrate
