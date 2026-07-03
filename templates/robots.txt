@@ -1,0 +1,9 @@
+User-agent: *
+Allow: /
+Disallow: /admin/
+Disallow: /accounts/
+Disallow: /cart/
+Disallow: /checkout/
+Disallow: /payment/
+
+Sitemap: https://aromallure.store/sitemap.xml

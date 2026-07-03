@@ -1,0 +1,10 @@
+{% extends 'base.html' %}
+{% block title %}Page Not Found — {{ store_name }}{% endblock %}
+{% block content %}
+<div class="page-container error-page">
+  <span class="label-small">404</span>
+  <h1>This Page Has Wandered Off</h1>
+  <p class="hero-sub">The page you're looking for doesn't exist, or may have been moved.</p>
+  <a href="{% url 'product_list' %}" class="btn error-btn">Return to the Collection</a>
+</div>
+{% endblock %}

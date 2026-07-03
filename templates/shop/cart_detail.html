@@ -1,0 +1,54 @@
+{% extends 'base.html' %}
+{% block title %}Your Cart — {{ store_name }}{% endblock %}
+{% block content %}
+<div class="page-container">
+  <h1>Your Cart</h1>
+
+  {% if cart.is_empty %}
+    <p class="empty-state-block">Your cart is empty. <a href="{% url 'product_list' %}">Browse the collection &rarr;</a></p>
+  {% else %}
+    <div class="cart-table">
+      <div class="cart-row cart-head">
+        <span>Item</span>
+        <span>Price</span>
+        <span>Quantity</span>
+        <span>Subtotal</span>
+        <span></span>
+      </div>
+      {% for line in cart %}
+      <div class="cart-row">
+        <span class="cart-item-info">
+          <strong>{{ line.product.name }}</strong>
+          <span class="product-brand">{{ line.product.brand }}</span>
+        </span>
+        <span>GH₵{{ line.unit_price }}</span>
+        <span>
+          <form action="{% url 'cart_update' line.product.id %}" method="post" class="qty-form">
+            {% csrf_token %}
+            <input type="number" name="quantity" value="{{ line.quantity }}" min="1" max="{{ line.product.stock }}" class="qty-input">
+            <button type="submit" class="btn-small">Update</button>
+          </form>
+        </span>
+        <span>GH₵{{ line.subtotal }}</span>
+        <span>
+          <form action="{% url 'cart_remove' line.product.id %}" method="post">
+            {% csrf_token %}
+            <button type="submit" class="btn-small btn-remove">Remove</button>
+          </form>
+        </span>
+      </div>
+      {% endfor %}
+    </div>
+
+    <div class="cart-summary">
+      <span class="cart-total-label">Total</span>
+      <span class="cart-total-value">GH₵{{ cart.get_total_price }}</span>
+    </div>
+
+    <div class="cart-actions">
+      <a href="{% url 'product_list' %}" class="back-link">&larr; Continue Shopping</a>
+      <a href="{% url 'checkout' %}" class="btn checkout-btn">Proceed to Checkout</a>
+    </div>
+  {% endif %}
+</div>
+{% endblock %}

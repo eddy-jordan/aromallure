@@ -1,0 +1,165 @@
+{% extends "admin/base_site.html" %}
+{% load i18n %}
+
+{% block content %}
+<style>
+  .dash-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1.2rem; margin-bottom: 2rem; }
+  .dash-card { background: #1f1f1f; border: 1px solid #333; border-radius: 6px; padding: 1.2rem 1.4rem; }
+  .dash-card .label { font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.08em; color: #999; margin-bottom: 0.4rem; }
+  .dash-card .value { font-size: 2rem; font-weight: 700; color: #C9A227; }
+  .dash-card .sub { font-size: 0.78rem; color: #777; margin-top: 0.2rem; }
+  .dash-card.green .value { color: #6B8F5C; }
+  .dash-card.red .value { color: #C0524A; }
+  .dash-card.blue .value { color: #7FB0E0; }
+
+  .dash-section { margin-bottom: 2rem; }
+  .dash-section h2 { font-size: 1rem; color: #C9A227; border-bottom: 1px solid #333; padding-bottom: 0.5rem; margin-bottom: 1rem; text-transform: uppercase; letter-spacing: 0.06em; }
+
+  .dash-table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
+  .dash-table th { text-align: left; padding: 0.5rem 0.8rem; color: #999; font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.06em; border-bottom: 1px solid #333; }
+  .dash-table td { padding: 0.6rem 0.8rem; border-bottom: 1px solid #222; color: #ddd; }
+  .dash-table tr:hover td { background: #222; }
+  .dash-table a { color: #C9A227; }
+
+  .badge { display: inline-block; padding: 0.15rem 0.55rem; border-radius: 3px; font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.05em; }
+  .badge-pending { background: rgba(201,162,39,0.18); color: #C9A227; }
+  .badge-paid { background: rgba(107,143,92,0.18); color: #6B8F5C; }
+  .badge-shipped { background: rgba(91,140,200,0.18); color: #7FB0E0; }
+  .badge-delivered { background: rgba(107,143,92,0.28); color: #6B8F5C; }
+  .badge-cancelled { background: rgba(192,82,74,0.18); color: #C0524A; }
+
+  .alert-low { color: #C0524A; font-weight: 600; }
+  .dash-two-col { display: grid; grid-template-columns: 1.6fr 1fr; gap: 1.5rem; }
+  @media (max-width: 900px) {
+    .dash-grid { grid-template-columns: 1fr 1fr; }
+    .dash-two-col { grid-template-columns: 1fr; }
+  }
+</style>
+
+<h1>Aromallure Dashboard</h1>
+
+<!-- ── Stat cards ── -->
+<div class="dash-grid">
+  <div class="dash-card">
+    <div class="label">Total Orders</div>
+    <div class="value">{{ total_orders }}</div>
+    <div class="sub">All time</div>
+  </div>
+  <div class="dash-card green">
+    <div class="label">Revenue</div>
+    <div class="value">GH₵{{ total_revenue }}</div>
+    <div class="sub">From paid orders</div>
+  </div>
+  <div class="dash-card blue">
+    <div class="label">Orders Today</div>
+    <div class="value">{{ orders_today }}</div>
+    <div class="sub">Since midnight</div>
+  </div>
+  <div class="dash-card {% if pending_orders > 0 %}red{% endif %}">
+    <div class="label">Pending Payment</div>
+    <div class="value">{{ pending_orders }}</div>
+    <div class="sub">Awaiting MoMo</div>
+  </div>
+</div>
+
+<div class="dash-two-col">
+
+  <!-- ── Recent orders ── -->
+  <div class="dash-section">
+    <h2>Recent Orders</h2>
+    {% if recent_orders %}
+    <table class="dash-table">
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Customer</th>
+          <th>Items</th>
+          <th>Total</th>
+          <th>Status</th>
+          <th>Date</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for order in recent_orders %}
+        <tr>
+          <td><a href="/admin/shop/order/{{ order.id }}/change/">#{{ order.id }}</a></td>
+          <td>{{ order.full_name }}</td>
+          <td>{{ order.items.count }}</td>
+          <td>GH₵{{ order.total_price }}</td>
+          <td><span class="badge badge-{{ order.status|lower }}">{{ order.get_status_display }}</span></td>
+          <td>{{ order.created_at|date:"M d, H:i" }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    <p style="margin-top:0.6rem;"><a href="/admin/shop/order/">View all orders &rarr;</a></p>
+    {% else %}
+    <p style="color:#777;">No orders yet.</p>
+    {% endif %}
+  </div>
+
+  <!-- ── Low stock & quick links ── -->
+  <div>
+    <div class="dash-section">
+      <h2>Stock Alerts</h2>
+      {% if low_stock %}
+      <table class="dash-table">
+        <thead><tr><th>Product</th><th>Stock</th></tr></thead>
+        <tbody>
+          {% for p in low_stock %}
+          <tr>
+            <td><a href="/admin/shop/product/{{ p.id }}/change/">{{ p.name }}</a></td>
+            <td class="{% if p.stock == 0 %}alert-low{% endif %}">
+              {% if p.stock == 0 %}Sold Out{% else %}{{ p.stock }} left{% endif %}
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+      {% else %}
+      <p style="color:#777; font-size:0.85rem;">All products are well-stocked. ✓</p>
+      {% endif %}
+    </div>
+
+    <div class="dash-section">
+      <h2>Quick Links</h2>
+      <div style="display:flex; flex-direction:column; gap:0.5rem;">
+        <a href="/admin/shop/product/add/">+ Add New Product</a>
+        <a href="/admin/shop/order/?status__exact=PENDING">View Pending Orders</a>
+        <a href="/admin/shop/order/?status__exact=PAID">View Paid Orders</a>
+        <a href="/admin/auth/user/">Manage Customers</a>
+        <a href="/" target="_blank">View Live Store ↗</a>
+      </div>
+    </div>
+
+    <div class="dash-section">
+      <h2>Customers</h2>
+      <table class="dash-table">
+        <thead><tr><th>Metric</th><th>Count</th></tr></thead>
+        <tbody>
+          <tr><td>Total customers</td><td>{{ total_customers }}</td></tr>
+          <tr><td>New this week</td><td>{{ new_customers_week }}</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+</div>
+
+<!-- ── Standard Django apps list ── -->
+<div class="dash-section">
+  <h2>Admin Modules</h2>
+  {% for app in app_list %}
+    <h3>{{ app.name }}</h3>
+    <ul>
+      {% for model in app.models %}
+        <li>
+          {% if model.admin_url %}<a href="{{ model.admin_url }}">{{ model.name }}</a>{% else %}{{ model.name }}{% endif %}
+          {% if model.add_url %}&nbsp;<a href="{{ model.add_url }}">(+ Add)</a>{% endif %}
+        </li>
+      {% endfor %}
+    </ul>
+  {% endfor %}
+</div>
+
+{% endblock %}

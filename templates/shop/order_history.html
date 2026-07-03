@@ -1,0 +1,30 @@
+{% extends 'base.html' %}
+{% block title %}My Orders — {{ store_name }}{% endblock %}
+{% block content %}
+<div class="page-container">
+  <h1>My Orders</h1>
+
+  {% if orders %}
+    <div class="cart-table">
+      <div class="cart-row cart-head">
+        <span>Order</span>
+        <span>Date</span>
+        <span>Status</span>
+        <span>Total</span>
+        <span></span>
+      </div>
+      {% for order in orders %}
+      <div class="cart-row">
+        <span>#{{ order.id }}</span>
+        <span>{{ order.created_at|date:"M d, Y" }}</span>
+        <span><span class="status-badge status-{{ order.status|lower }}">{{ order.get_status_display }}</span></span>
+        <span>GH₵{{ order.total_price }}</span>
+        <span><a href="{% url 'order_confirmation' order.id %}" class="btn-small">View</a></span>
+      </div>
+      {% endfor %}
+    </div>
+  {% else %}
+    <p class="empty-state-block">You haven't placed any orders yet. <a href="{% url 'product_list' %}">Browse the collection &rarr;</a></p>
+  {% endif %}
+</div>
+{% endblock %}

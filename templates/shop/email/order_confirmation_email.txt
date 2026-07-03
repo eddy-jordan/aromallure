@@ -1,0 +1,23 @@
+{{ store_name }} — Order Confirmation
+========================================
+
+Thank you, {{ order.full_name }}!
+
+Your order #{{ order.id }} has been placed and is currently: {{ order.get_status_display }}
+
+ITEMS
+-----
+{% for item in order.items.all %}{{ item.quantity }} x {{ item.product_name }} — GH₵{{ item.subtotal }}
+{% endfor %}
+TOTAL: GH₵{{ order.total_price }}
+
+SHIPPING TO
+-----------
+{{ order.full_name }}
+{{ order.shipping_address }}
+{{ order.phone_number }}
+
+Your order will be processed once payment is confirmed.
+We will notify you when your order has been shipped.
+
+Thank you for shopping with {{ store_name }}.

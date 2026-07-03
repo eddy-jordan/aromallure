@@ -1,0 +1,32 @@
+services:
+  - type: web
+    name: aromallure
+    env: python
+    buildCommand: pip install -r requirements.txt && python manage.py collectstatic --noinput && python manage.py migrate
+    startCommand: gunicorn perfume_store.wsgi:application --bind 0.0.0.0:$PORT
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.14.3
+      - key: SECRET_KEY
+        generateValue: true
+      - key: DEBUG
+        value: "False"
+      - key: ALLOWED_HOSTS
+        value: ".onrender.com,aromallure.store,www.aromallure.store"
+      - key: DATABASE_URL
+        sync: false
+      - key: RESEND_API_KEY
+        sync: false
+      - key: EMAIL_FROM
+        value: "Aromallure <hello@aromallure.store>"
+      - key: CLOUDINARY_URL
+        sync: false
+      - key: PAYSTACK_PUBLIC_KEY
+        sync: false
+      - key: PAYSTACK_SECRET_KEY
+        sync: false
+
+# No databases section — using Neon (neon.tech) for free persistent
+# PostgreSQL instead of Render's built-in database which expires after
+# 90 days. Add your Neon connection string as DATABASE_URL in the
+# Render dashboard under Environment variables.

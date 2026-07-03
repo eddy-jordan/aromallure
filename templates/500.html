@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Something Went Wrong</title>
+  <!--
+    Deliberately self-contained: no template inheritance, no static files,
+    and no reliance on context processors. Django's built-in 500 handler
+    renders this template WITHOUT running context processors (site name,
+    cart count, login state, etc. are all unavailable here) — by design,
+    since something has already broken and this page shouldn't risk
+    depending on anything else that could also be broken.
+  -->
+  <style>
+    body {
+      background: #12100E;
+      color: #F4EDE2;
+      font-family: Georgia, 'Times New Roman', serif;
+      min-height: 100vh;
+      margin: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+    }
+    .box { max-width: 480px; padding: 2rem; }
+    .code { color: #C9A227; letter-spacing: 0.1em; font-size: 0.8rem; text-transform: uppercase; }
+    h1 { font-size: 1.8rem; margin: 0.6rem 0 1rem; }
+    p { color: #A89A82; line-height: 1.7; }
+    a { color: #C9A227; text-decoration: none; }
+    a:hover { text-decoration: underline; }
+  </style>
+</head>
+<body>
+  <div class="box">
+    <span class="code">500</span>
+    <h1>Something Went Wrong on Our End</h1>
+    <p>This wasn't your fault. Please try again in a moment.</p>
+    <a href="/">Return to the Collection</a>
+  </div>
+</body>
+</html>

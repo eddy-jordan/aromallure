@@ -1,0 +1,46 @@
+{% extends 'base.html' %}
+{% block title %}Checkout — {{ store_name }}{% endblock %}
+{% block content %}
+<div class="page-container checkout-container">
+  <h1>Checkout</h1>
+
+  <div class="checkout-grid">
+    <form method="post" class="checkout-form">
+      {% csrf_token %}
+      <h3 class="label-small">Shipping Details</h3>
+
+      <div class="form-group">
+        <label for="{{ form.full_name.id_for_label }}">Full Name</label>
+        {{ form.full_name }}
+        {{ form.full_name.errors }}
+      </div>
+      <div class="form-group">
+        <label for="{{ form.shipping_address.id_for_label }}">Shipping Address</label>
+        {{ form.shipping_address }}
+        {{ form.shipping_address.errors }}
+      </div>
+      <div class="form-group">
+        <label for="{{ form.phone_number.id_for_label }}">Phone Number</label>
+        {{ form.phone_number }}
+        {{ form.phone_number.errors }}
+      </div>
+
+      <button type="submit" class="btn">Continue to Payment</button>
+    </form>
+
+    <div class="order-summary">
+      <h3 class="label-small">Order Summary</h3>
+      {% for line in cart %}
+        <div class="summary-line">
+          <span>{{ line.quantity }} &times; {{ line.product.name }}</span>
+          <span>GH₵{{ line.subtotal }}</span>
+        </div>
+      {% endfor %}
+      <div class="summary-line summary-total">
+        <span>Total</span>
+        <span>GH₵{{ cart.get_total_price }}</span>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

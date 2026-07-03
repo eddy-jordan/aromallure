@@ -1,0 +1,53 @@
+{% extends 'base.html' %}
+{% block title %}Order Confirmed — {{ store_name }}{% endblock %}
+{% block content %}
+<div class="page-container">
+  <div class="confirmation-header">
+    <h1>Thank you, {{ order.full_name }}!</h1>
+    <p class="catalog-sub">
+      Order #{{ order.id }} has been placed and is currently
+      <span class="status-badge status-{{ order.status|lower }}">{{ order.get_status_display }}</span>.
+      {% if order.status == 'PAID' %}
+        <span style="color:var(--success);">✓ Payment confirmed.</span>
+      {% elif order.status == 'PENDING' %}
+        <span style="color:var(--muted); font-size:0.85rem;">
+          Please complete your Mobile Money payment to confirm this order.
+        </span>
+      {% endif %}
+    </p>
+  </div>
+
+  <div class="order-summary">
+    <h3 class="label-small">Items</h3>
+    {% for item in order.items.all %}
+      <div class="summary-line">
+        <span>{{ item.quantity }} &times; {{ item.product_name }}</span>
+        <span>GH₵{{ item.subtotal }}</span>
+      </div>
+    {% endfor %}
+    <div class="summary-line summary-total">
+      <span>Total</span>
+      <span>GH₵{{ order.total_price }}</span>
+    </div>
+  </div>
+
+  <div class="order-summary">
+    <h3 class="label-small">Shipping To</h3>
+    <p>{{ order.full_name }}<br>{{ order.shipping_address|linebreaksbr }}<br>{{ order.phone_number }}</p>
+  </div>
+
+  {% if order.payment_reference %}
+  <div class="order-summary">
+    <h3 class="label-small">Payment Reference</h3>
+    <p style="font-family:'IBM Plex Mono',monospace; font-size:0.85rem; color:var(--muted);">
+      {{ order.payment_reference }}
+    </p>
+  </div>
+  {% endif %}
+
+  <div class="cart-actions">
+    <a href="{% url 'product_list' %}" class="back-link">&larr; Continue Shopping</a>
+    <a href="{% url 'order_history' %}" class="btn checkout-btn">View All Orders</a>
+  </div>
+</div>
+{% endblock %}

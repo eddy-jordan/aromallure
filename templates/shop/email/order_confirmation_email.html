@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html>
+<head><meta charset="UTF-8"></head>
+<body style="background:#12100E; margin:0; padding:2rem; font-family:Georgia,serif; color:#F4EDE2;">
+  <table role="presentation" width="100%" style="max-width:520px; margin:0 auto; background:#1C1916; border:1px solid rgba(201,162,39,0.35); padding:2rem;">
+    <tr>
+      <td>
+        <p style="color:#C9A227; text-transform:uppercase; letter-spacing:0.1em; font-size:0.75rem; margin:0 0 1rem;">{{ store_name }}</p>
+        <h1 style="font-size:1.4rem; margin:0 0 0.4rem; color:#F4EDE2;">Thank you, {{ order.full_name }}!</h1>
+        <p style="color:#A89A82; font-size:0.9rem; margin:0 0 1.5rem;">
+          Order #{{ order.id }} has been placed and is currently
+          <strong style="color:#C9A227;">{{ order.get_status_display }}</strong>.
+        </p>
+
+        <table role="presentation" width="100%" style="border-top:1px solid rgba(201,162,39,0.35); padding-top:1rem;">
+          {% for item in order.items.all %}
+          <tr>
+            <td style="padding:0.4rem 0; font-size:0.9rem;">{{ item.quantity }} &times; {{ item.product_name }}</td>
+            <td style="padding:0.4rem 0; font-size:0.9rem; text-align:right;">GH₵{{ item.subtotal }}</td>
+          </tr>
+          {% endfor %}
+          <tr>
+            <td style="padding-top:0.8rem; border-top:1px solid rgba(201,162,39,0.35); font-weight:bold; color:#C9A227;">Total</td>
+            <td style="padding-top:0.8rem; border-top:1px solid rgba(201,162,39,0.35); font-weight:bold; color:#C9A227; text-align:right;">GH₵{{ order.total_price }}</td>
+          </tr>
+        </table>
+
+        <p style="color:#A89A82; font-size:0.8rem; margin-top:2rem;">
+          Shipping to: {{ order.full_name }}, {{ order.shipping_address }}, {{ order.phone_number }}
+        </p>
+        <p style="color:#A89A82; font-size:0.75rem; margin-top:1.5rem;">
+          Your order will be processed once payment is confirmed.
+          We will notify you once your order has been shipped.
+        </p>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>

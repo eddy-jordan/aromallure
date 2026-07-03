@@ -1,0 +1,103 @@
+{% extends 'base.html' %}
+{% block title %}{{ product.name }} — {{ store_name }}{% endblock %}
+{% block content %}
+<div class="page-container detail-container">
+  <a href="{% url 'product_list' %}" class="back-link">&larr; The Collection</a>
+
+  <div class="detail-grid">
+    <div class="detail-image">
+      {% if product.image %}
+        <img src="{{ product.image.url }}" alt="{{ product.name }}">
+      {% else %}
+        <div class="bottle-placeholder large" data-initial="{{ product.name|first }}">
+          <svg viewBox="0 0 60 100" class="bottle-icon" aria-hidden="true">
+            <rect x="24" y="4" width="12" height="9" rx="2"/>
+            <path d="M18 21 Q18 17 24 17 L36 17 Q42 17 42 21 L46 31 Q48 50 46 80 Q46 92 38 94 L22 94 Q14 92 14 80 Q12 50 14 31 Z"/>
+          </svg>
+        </div>
+      {% endif %}
+    </div>
+
+    <div class="detail-info">
+      <span class="product-brand">{{ product.brand }}</span>
+      <h1>{{ product.name }}</h1>
+
+      <div class="detail-specs">
+        <div class="spec-item">
+          <span class="spec-label">Type</span>
+          <span class="spec-value">{{ product.get_concentration_display }}</span>
+        </div>
+        <div class="spec-item">
+          <span class="spec-label">Size</span>
+          <span class="spec-value">{{ product.volume_ml }}ml</span>
+        </div>
+        {% if product.scent_notes %}
+        <div class="spec-item">
+          <span class="spec-label">Scent Notes</span>
+          <span class="spec-value">{{ product.scent_notes }}</span>
+        </div>
+        {% endif %}
+        <div class="spec-item">
+          <span class="spec-label">Availability</span>
+          <span class="spec-value {% if product.in_stock %}spec-in-stock{% else %}spec-out-stock{% endif %}">
+            {% if product.in_stock %}{{ product.stock }} in stock{% else %}Sold Out{% endif %}
+          </span>
+        </div>
+      </div>
+
+      <p class="detail-description">{{ product.description }}</p>
+
+      <div class="detail-purchase">
+        <span class="product-price large">GH₵{{ product.price }}</span>
+        {% if product.in_stock %}
+          <form action="{% url 'add_to_cart' product.slug %}" method="post" class="add-to-cart-form">
+            {% csrf_token %}
+            <input type="number" name="quantity" value="1" min="1" max="{{ product.stock }}" class="qty-input">
+            <button type="submit" class="btn">Add to Cart</button>
+          </form>
+        {% else %}
+          <button type="button" class="btn btn-disabled" disabled>Sold Out</button>
+        {% endif %}
+      </div>
+
+      <div class="detail-assurance">
+        <span>🇬🇭 Made in Ghana</span>
+        <span>✦ Small Batch</span>
+        <span>🚚 Accra Delivery</span>
+      </div>
+    </div>
+  </div>
+
+  {% if related %}
+  <div class="related-section">
+    <h2 class="related-title">You Might Also Like</h2>
+    <div class="related-grid">
+      {% for p in related %}
+      <a href="{% url 'product_detail' p.slug %}" class="product-card{% if not p.in_stock %} is-out{% endif %}">
+        <div class="product-thumb">
+          {% if p.image %}
+            <img src="{{ p.image.url }}" alt="{{ p.name }}">
+          {% else %}
+            <div class="bottle-placeholder" data-initial="{{ p.name|first }}">
+              <svg viewBox="0 0 60 100" class="bottle-icon" aria-hidden="true">
+                <rect x="24" y="4" width="12" height="9" rx="2"/>
+                <path d="M18 21 Q18 17 24 17 L36 17 Q42 17 42 21 L46 31 Q48 50 46 80 Q46 92 38 94 L22 94 Q14 92 14 80 Q12 50 14 31 Z"/>
+              </svg>
+            </div>
+          {% endif %}
+          {% if not p.in_stock %}<span class="badge badge-out">Sold Out</span>{% endif %}
+        </div>
+        <div class="product-info">
+          <span class="product-brand">{{ p.brand }}</span>
+          <h3 class="product-name">{{ p.name }}</h3>
+          <span class="product-meta">{{ p.get_concentration_display }} · {{ p.volume_ml }}ml</span>
+          <span class="product-price">GH₵{{ p.price }}</span>
+        </div>
+      </a>
+      {% endfor %}
+    </div>
+  </div>
+  {% endif %}
+
+</div>
+{% endblock %}
