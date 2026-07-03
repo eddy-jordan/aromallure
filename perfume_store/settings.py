@@ -163,13 +163,13 @@ STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 # are wiped on every redeploy. Cloudinary stores them permanently in the
 # cloud. The free tier (25GB storage, 25GB/month bandwidth) is more than
 # enough for a growing perfume store.
-# Set CLOUDINARY_URL in your .env locally and in Render's env vars.
 CLOUDINARY_URL = os.environ.get('CLOUDINARY_URL', '')
 if CLOUDINARY_URL:
-    DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
-    CLOUDINARY_STORAGE = {'CLOUDINARY_URL': CLOUDINARY_URL}
+    import cloudinary
+    cloudinary.config(cloudinary_url=CLOUDINARY_URL)
+    DEFAULT_FILE_STORAGE  = 'cloudinary_storage.storage.MediaCloudinaryStorage'
+    CLOUDINARY_STORAGE    = {'CLOUDINARY_URL': CLOUDINARY_URL}
 else:
-    # Local development fallback — images stored in /media/ folder
     DEFAULT_FILE_STORAGE = 'django.core.files.storage.FileSystemStorage'
 
 MEDIA_URL  = '/media/'
