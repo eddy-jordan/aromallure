@@ -83,3 +83,4 @@ Built to be resilient and accessible:
 ## Still To Come (see BACKLOG.md)
 - Phase 6: Real payment processing (Stripe)
 - Email verification at signup
+# force rebuild
