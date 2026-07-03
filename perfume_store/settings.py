@@ -165,6 +165,11 @@ STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 # enough for a growing perfume store.
 # ── Media files (Cloudinary) ─────────────────────────────────────────────────
 _cloudinary_url = os.environ.get('CLOUDINARY_URL', '')
+import logging
+_logger = logging.getLogger(__name__)
+_logger.warning(f"CLOUDINARY_URL present: {bool(_cloudinary_url)}")
+_logger.warning(f"CLOUDINARY_URL starts with: {_cloudinary_url[:15] if _cloudinary_url else 'EMPTY'}")
+
 if _cloudinary_url:
     try:
         from urllib.parse import urlparse
@@ -173,6 +178,10 @@ if _cloudinary_url:
         _api_key      = _parsed.username
         _api_secret   = _parsed.password
 
+        _logger.warning(f"Cloudinary cloud_name: {_cloud_name}")
+        _logger.warning(f"Cloudinary api_key present: {bool(_api_key)}")
+        _logger.warning(f"Cloudinary api_secret present: {bool(_api_secret)}")
+
         import cloudinary
         cloudinary.config(
             cloud_name = _cloud_name,
@@ -180,14 +189,16 @@ if _cloudinary_url:
             api_secret = _api_secret,
             secure     = True,
         )
-        # Store cloud name for use in storage.py url() method
         _CLOUDINARY_CLOUD_NAME   = _cloud_name
         DEFAULT_FILE_STORAGE     = 'shop.storage.CloudinaryMediaStorage'
         MEDIA_URL = f'https://res.cloudinary.com/{_cloud_name}/image/upload/'
+        _logger.warning(f"Cloudinary storage ACTIVE. MEDIA_URL: {MEDIA_URL}")
     except Exception as e:
+        _logger.warning(f"Cloudinary config FAILED: {e}")
         DEFAULT_FILE_STORAGE = 'django.core.files.storage.FileSystemStorage'
         MEDIA_URL = '/media/'
 else:
+    _logger.warning("CLOUDINARY_URL not set — using local file storage")
     DEFAULT_FILE_STORAGE = 'django.core.files.storage.FileSystemStorage'
     MEDIA_URL = '/media/'
 
