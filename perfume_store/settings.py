@@ -169,10 +169,11 @@ if CLOUDINARY_URL:
     cloudinary.config(cloudinary_url=CLOUDINARY_URL)
     DEFAULT_FILE_STORAGE  = 'cloudinary_storage.storage.MediaCloudinaryStorage'
     CLOUDINARY_STORAGE    = {'CLOUDINARY_URL': CLOUDINARY_URL}
+    MEDIA_URL  = f'https://res.cloudinary.com/hlft2bzj/'
 else:
     DEFAULT_FILE_STORAGE = 'django.core.files.storage.FileSystemStorage'
+    MEDIA_URL  = '/media/'
 
-MEDIA_URL  = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
 
 # ── Logging ───────────────────────────────────────────────────────────────────
