@@ -163,16 +163,41 @@ STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 # are wiped on every redeploy. Cloudinary stores them permanently in the
 # cloud. The free tier (25GB storage, 25GB/month bandwidth) is more than
 # enough for a growing perfume store.
-CLOUDINARY_URL = os.environ.get('CLOUDINARY_URL', '')
-if CLOUDINARY_URL:
-    import cloudinary
-    cloudinary.config(cloudinary_url=CLOUDINARY_URL)
-    DEFAULT_FILE_STORAGE  = 'cloudinary_storage.storage.MediaCloudinaryStorage'
-    CLOUDINARY_STORAGE    = {'CLOUDINARY_URL': CLOUDINARY_URL}
-    MEDIA_URL  = 'https://res.cloudinary.com/hlft2bzj/image/upload/'
+# ── Media files (Cloudinary) ─────────────────────────────────────────────────
+# Render's filesystem is ephemeral — uploaded files are lost on every redeploy.
+# Cloudinary stores them permanently in the cloud.
+# CLOUDINARY_URL format: cloudinary://API_KEY:API_SECRET@CLOUD_NAME
+_cloudinary_url = os.environ.get('CLOUDINARY_URL', '')
+if _cloudinary_url:
+    try:
+        # Parse cloudinary://API_KEY:API_SECRET@CLOUD_NAME
+        from urllib.parse import urlparse
+        _parsed = urlparse(_cloudinary_url)
+        _cloud_name = _parsed.hostname      # hlft2bzj
+        _api_key    = _parsed.username      # numeric key
+        _api_secret = _parsed.password      # secret string
+
+        import cloudinary
+        cloudinary.config(
+            cloud_name = _cloud_name,
+            api_key    = _api_key,
+            api_secret = _api_secret,
+            secure     = True,
+        )
+
+        CLOUDINARY_STORAGE = {
+            'CLOUD_NAME': _cloud_name,
+            'API_KEY':    _api_key,
+            'API_SECRET': _api_secret,
+        }
+        DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
+        MEDIA_URL = f'https://res.cloudinary.com/{_cloud_name}/image/upload/'
+    except Exception:
+        DEFAULT_FILE_STORAGE = 'django.core.files.storage.FileSystemStorage'
+        MEDIA_URL = '/media/'
 else:
     DEFAULT_FILE_STORAGE = 'django.core.files.storage.FileSystemStorage'
-    MEDIA_URL  = '/media/'
+    MEDIA_URL = '/media/'
 
 MEDIA_ROOT = BASE_DIR / 'media'
 
