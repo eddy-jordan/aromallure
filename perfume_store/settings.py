@@ -164,18 +164,14 @@ STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 # cloud. The free tier (25GB storage, 25GB/month bandwidth) is more than
 # enough for a growing perfume store.
 # ── Media files (Cloudinary) ─────────────────────────────────────────────────
-# Render's filesystem is ephemeral — uploaded files are lost on every redeploy.
-# Cloudinary stores them permanently in the cloud.
-# CLOUDINARY_URL format: cloudinary://API_KEY:API_SECRET@CLOUD_NAME
 _cloudinary_url = os.environ.get('CLOUDINARY_URL', '')
 if _cloudinary_url:
     try:
-        # Parse cloudinary://API_KEY:API_SECRET@CLOUD_NAME
         from urllib.parse import urlparse
-        _parsed = urlparse(_cloudinary_url)
-        _cloud_name = _parsed.hostname      # hlft2bzj
-        _api_key    = _parsed.username      # numeric key
-        _api_secret = _parsed.password      # secret string
+        _parsed       = urlparse(_cloudinary_url)
+        _cloud_name   = _parsed.hostname
+        _api_key      = _parsed.username
+        _api_secret   = _parsed.password
 
         import cloudinary
         cloudinary.config(
@@ -184,15 +180,11 @@ if _cloudinary_url:
             api_secret = _api_secret,
             secure     = True,
         )
-
-        CLOUDINARY_STORAGE = {
-            'CLOUD_NAME': _cloud_name,
-            'API_KEY':    _api_key,
-            'API_SECRET': _api_secret,
-        }
-        DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
+        # Store cloud name for use in storage.py url() method
+        _CLOUDINARY_CLOUD_NAME   = _cloud_name
+        DEFAULT_FILE_STORAGE     = 'shop.storage.CloudinaryMediaStorage'
         MEDIA_URL = f'https://res.cloudinary.com/{_cloud_name}/image/upload/'
-    except Exception:
+    except Exception as e:
         DEFAULT_FILE_STORAGE = 'django.core.files.storage.FileSystemStorage'
         MEDIA_URL = '/media/'
 else:
