@@ -30,15 +30,29 @@ def signup_view(request):
 
 
 def product_list_view(request):
-    """Product catalog with pagination — 12 products per page."""
+    """Product catalog with search and pagination — 12 products per page."""
     from django.core.paginator import Paginator
+    from django.db.models import Q
+
+    query    = request.GET.get('q', '').strip()
     products_qs = Product.objects.filter(is_active=True)
+
+    if query:
+        products_qs = products_qs.filter(
+            Q(name__icontains=query) |
+            Q(brand__icontains=query) |
+            Q(scent_notes__icontains=query) |
+            Q(description__icontains=query)
+        )
+
     paginator   = Paginator(products_qs, 12)
     page_number = request.GET.get('page', 1)
     products    = paginator.get_page(page_number)
+
     return render(request, 'shop/product_list.html', {
         'products': products,
-        'is_home':  True,
+        'is_home':  not query,  # only show entrance animation when not searching
+        'query':    query,
     })
 
 

@@ -47,8 +47,16 @@
 
 <div class="page-container" id="collection">
   <div class="catalog-header">
-    <h2>The Collection</h2>
-    <p class="catalog-sub">{{ products|length }} fragrance{{ products|length|pluralize }} available right now.</p>
+    {% if query %}
+      <h2>Search Results for "{{ query }}"</h2>
+      <p class="catalog-sub">
+        {{ products.paginator.count }} fragrance{{ products.paginator.count|pluralize }} found.
+        <a href="{% url 'product_list' %}" style="margin-left:0.8rem; font-size:0.82rem;">Clear search &times;</a>
+      </p>
+    {% else %}
+      <h2>The Collection</h2>
+      <p class="catalog-sub">{{ products.paginator.count }} fragrance{{ products.paginator.count|pluralize }} available right now.</p>
+    {% endif %}
   </div>
 
   <div class="product-grid">
