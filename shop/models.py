@@ -25,6 +25,12 @@ class Product(models.Model):
     price = models.DecimalField(max_digits=8, decimal_places=2)
     stock = models.PositiveIntegerField(default=0)
     image = models.ImageField(upload_to='products/', blank=True, null=True)
+    image_url = models.URLField(
+        max_length=500, blank=True, default='',
+        help_text="Paste a direct Cloudinary image URL here. "
+                  "Upload your image at cloudinary.com → Assets → Upload, "
+                  "then right-click the image → Copy URL."
+    )
     is_active = models.BooleanField(default=True, help_text="Uncheck to hide from the store without deleting.")
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)

@@ -33,6 +33,9 @@ class ProductAdmin(admin.ModelAdmin):
     search_fields       = ['name', 'brand', 'scent_notes']
     prepopulated_fields = {'slug': ('name',)}
     list_editable       = ['price', 'stock', 'is_active']
+    fields              = ['name', 'slug', 'brand', 'description', 'scent_notes',
+                           'concentration', 'volume_ml', 'price', 'stock',
+                           'image_url', 'image', 'is_active']
 
 
 class OrderItemInline(admin.TabularInline):
