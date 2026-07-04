@@ -37,7 +37,7 @@
       <span>{{ store_name|upper }}</span>
     </a>
 
-    <form action="{% url 'product_list' %}" method="get" class="nav-search" role="search">
+    <form action="{% url 'product_list' %}" method="get" class="nav-search" role="search" onsubmit="this.action='/?q='+encodeURIComponent(this.q.value)+'#collection'; return true;">
       <input
         type="search"
         name="q"
@@ -174,7 +174,17 @@
     })();
 
     (function () {
-      var overlay = document.getElementById('entrance-overlay');
+      // Auto-scroll to search results when a search query is present
+      var urlParams = new URLSearchParams(window.location.search);
+      if (urlParams.get('q')) {
+        var collection = document.getElementById('collection');
+        if (collection) {
+          setTimeout(function () {
+            collection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+          }, 100);
+        }
+      }
+    })();
       if (!overlay) return;
       var prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
       if (prefersReduced) { overlay.remove(); return; }
