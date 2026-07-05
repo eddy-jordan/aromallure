@@ -185,6 +185,9 @@
         }
       }
     })();
+
+    (function () {
+      var overlay = document.getElementById('entrance-overlay');
       if (!overlay) return;
       var prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
       if (prefersReduced) { overlay.remove(); return; }
