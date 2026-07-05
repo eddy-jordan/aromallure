@@ -203,6 +203,11 @@ def checkout(request):
                 order.recalculate_total()
                 request.session['pending_order_id'] = order.id
 
+            # Clear the cart immediately after the order is placed —
+            # for manual MoMo, payment happens offline so we can't
+            # wait for a webhook to clear it.
+            cart.clear()
+
             return redirect('payment_initiate', order_id=order.id)
     else:
         initial = {'full_name': request.user.get_full_name() or request.user.username}
