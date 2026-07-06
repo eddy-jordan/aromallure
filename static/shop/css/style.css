@@ -968,3 +968,155 @@ input[type="number"], input[type="tel"] {
 }
 .page-btn:hover { border-color: var(--gold); color: var(--gold); text-decoration: none; }
 .page-info { color: var(--muted); font-size: 0.82rem; }
+
+/* ═══════════════════════════════════════════════════════════
+   UI OVERHAUL — border-radius, remove outlines, cart icon,
+   mobile hamburger nav
+   ═══════════════════════════════════════════════════════════ */
+
+/* ── Global border-radius & outline removal ──────────────── */
+button, .btn, input, textarea, select,
+.product-card, .nav-search, .auth-container,
+.order-summary, .payment-panel, .btn-small,
+.cart-table, .checkout-form { border-radius: 12px !important; }
+
+.nav-search { border-radius: 24px !important; }
+.nav-search-input { border-radius: 24px 0 0 24px !important; }
+.nav-search-btn { border-radius: 0 24px 24px 0 !important; }
+
+.product-card { border-radius: 16px !important; overflow: hidden; }
+.product-thumb { border-radius: 16px 16px 0 0 !important; }
+
+.badge, .status-badge, .cart-badge { border-radius: 20px !important; }
+
+*:focus { outline: none !important; }
+*:focus-visible { outline: 2px solid var(--gold) !important; outline-offset: 2px; }
+
+/* ── Cart icon sizing ─────────────────────────────────────── */
+.cart-link {
+  position: relative;
+  display: flex;
+  align-items: center;
+  text-decoration: none;
+  color: var(--cream);
+}
+.cart-link svg { width: 22px; height: 22px; }
+.cart-link:hover { color: var(--gold); }
+.cart-badge {
+  position: absolute;
+  top: -6px;
+  right: -8px;
+  min-width: 16px;
+  height: 16px;
+  font-size: 0.6rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 4px;
+}
+
+/* ── Nav right (theme + cart + hamburger) ─────────────────── */
+.nav-right {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+/* ── Hamburger button ─────────────────────────────────────── */
+.hamburger-btn {
+  all: unset;
+  cursor: pointer;
+  display: none;
+  flex-direction: column;
+  justify-content: center;
+  gap: 5px;
+  width: 28px;
+  height: 28px;
+  padding: 2px;
+}
+.hamburger-btn span {
+  display: block;
+  width: 100%;
+  height: 2px;
+  background: var(--cream);
+  border-radius: 2px;
+  transition: transform 0.25s, opacity 0.25s;
+}
+.hamburger-btn[aria-expanded="true"] span:nth-child(1) { transform: translateY(7px) rotate(45deg); }
+.hamburger-btn[aria-expanded="true"] span:nth-child(2) { opacity: 0; }
+.hamburger-btn[aria-expanded="true"] span:nth-child(3) { transform: translateY(-7px) rotate(-45deg); }
+
+/* ── Footer copy clearer in light mode ───────────────────── */
+[data-theme="light"] .footer-copy { color: var(--cream); opacity: 0.85; }
+[data-theme="light"] .footer-tagline { color: var(--muted); }
+[data-theme="light"] .footer-brand { color: var(--cream); }
+
+/* ── Mobile nav (≤ 768px) ─────────────────────────────────── */
+@media (max-width: 768px) {
+  .navbar {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    grid-template-rows: auto auto;
+    gap: 0.7rem;
+    padding: 0.9rem 1.2rem;
+    position: relative;
+  }
+
+  /* Brand → top-left */
+  .brand {
+    grid-column: 1;
+    grid-row: 1;
+    font-size: 1.1rem;
+  }
+  .brand-logo { height: 1.8rem; }
+
+  /* Search → full-width second row */
+  .nav-search {
+    grid-column: 1 / -1;
+    grid-row: 2;
+    max-width: 100%;
+    margin: 0;
+  }
+
+  /* Right icons → top-right */
+  .nav-right {
+    grid-column: 2;
+    grid-row: 1;
+    gap: 0.8rem;
+  }
+
+  /* Show hamburger, hide desktop nav links */
+  .hamburger-btn { display: flex; }
+  .nav-links {
+    display: none;
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    background: var(--panel);
+    border-top: 1px solid var(--gold-soft);
+    border-bottom: 1px solid var(--gold-soft);
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0;
+    padding: 0.5rem 0;
+    z-index: 200;
+  }
+  .nav-links.nav-menu-open { display: flex; }
+  .nav-links a,
+  .nav-links .nav-greeting,
+  .nav-links .logout-btn {
+    padding: 0.75rem 1.5rem;
+    width: 100%;
+    display: block;
+    font-size: 0.9rem;
+  }
+  .nav-links .nav-divider { display: none; }
+  .nav-links .logout-form { width: 100%; }
+  .nav-links .logout-btn {
+    font-size: 0.9rem;
+    padding: 0.75rem 1.5rem;
+    text-align: left;
+    width: 100%;
+  }
+}
