@@ -1653,3 +1653,18 @@ input, input:focus,
     font-size: 0.68rem !important;
   }
 }
+
+/* ── Hamburger: tighter line spacing, no tap highlight ───── */
+@media (max-width: 768px) {
+  .hamburger-btn {
+    gap: 3px !important;
+    padding: 4px 3px !important;
+    -webkit-tap-highlight-color: transparent !important;
+    background: transparent !important;
+  }
+  .hamburger-btn:focus,
+  .hamburger-btn:active {
+    background: transparent !important;
+    outline: none !important;
+  }
+}
