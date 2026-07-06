@@ -64,9 +64,9 @@
 
       <a href="{% url 'cart_detail' %}" class="cart-link" aria-label="Cart">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
-          <path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/>
-          <line x1="3" y1="6" x2="21" y2="6"/>
-          <path d="M16 10a4 4 0 01-8 0"/>
+          <path d="M7.5 7.5C7.5 5 9.5 3 12 3s4.5 2 4.5 4.5"/>
+          <path d="M3 9h18l-1.68 9.39A2 2 0 0119.34 20H4.66a2 2 0 01-1.98-1.61L1 9h22"/>
+          <line x1="3" y1="9" x2="21" y2="9"/>
         </svg>
         {% if cart_item_count > 0 %}<span class="cart-badge">{{ cart_item_count }}</span>{% endif %}
       </a>
@@ -179,6 +179,7 @@
   </button>
 
   <script>
+    // ── Theme toggle ──────────────────────────────────────────
     (function () {
       var toggle = document.getElementById('theme-toggle');
       if (!toggle) return;
@@ -190,8 +191,25 @@
       });
     })();
 
+    // ── Hamburger menu ────────────────────────────────────────
     (function () {
-      // Auto-scroll to search results when a search query is present
+      var btn  = document.getElementById('nav-hamburger');
+      var menu = document.getElementById('nav-menu');
+      if (!btn || !menu) return;
+      btn.addEventListener('click', function () {
+        var open = menu.classList.toggle('nav-menu-open');
+        btn.setAttribute('aria-expanded', String(open));
+      });
+      menu.addEventListener('click', function (e) {
+        if (e.target.tagName === 'A' || e.target.closest('button[type="submit"]')) {
+          menu.classList.remove('nav-menu-open');
+          btn.setAttribute('aria-expanded', 'false');
+        }
+      });
+    })();
+
+    // ── Auto-scroll to search results ─────────────────────────
+    (function () {
       var urlParams = new URLSearchParams(window.location.search);
       if (urlParams.get('q')) {
         var collection = document.getElementById('collection');
@@ -203,6 +221,7 @@
       }
     })();
 
+    // ── Entrance overlay cleanup ──────────────────────────────
     (function () {
       var overlay = document.getElementById('entrance-overlay');
       if (!overlay) return;
@@ -214,23 +233,9 @@
       setTimeout(function () { if (overlay && overlay.parentNode) overlay.remove(); }, 2600);
     })();
 
+    // ── Back to top ───────────────────────────────────────────
     (function () {
-      // Hamburger menu toggle
-      var btn  = document.getElementById('nav-hamburger');
-      var menu = document.getElementById('nav-menu');
-      if (!btn || !menu) return;
-      btn.addEventListener('click', function () {
-        var open = menu.classList.toggle('nav-menu-open');
-        btn.setAttribute('aria-expanded', open);
-      });
-      // Close menu when a link is clicked
-      menu.addEventListener('click', function (e) {
-        if (e.target.tagName === 'A' || e.target.closest('button[type="submit"]')) {
-          menu.classList.remove('nav-menu-open');
-          btn.setAttribute('aria-expanded', 'false');
-        }
-      });
-    })();
+      var btn = document.getElementById('back-to-top');
       if (!btn) return;
       window.addEventListener('scroll', function () {
         btn.classList.toggle('visible', window.scrollY > 400);

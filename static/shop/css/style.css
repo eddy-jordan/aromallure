@@ -1120,3 +1120,37 @@ button, .btn, input, textarea, select,
     width: 100%;
   }
 }
+
+/* ═══════════════════════════════════════════════════════════
+   UI FIX PASS — stronger specificity overrides
+   ═══════════════════════════════════════════════════════════ */
+
+/* ── Remove ALL outlines everywhere except accessibility ──── */
+*, *::before, *::after { outline: none !important; }
+*:focus-visible { outline: 2px solid var(--gold) !important; outline-offset: 3px; }
+.brand:focus-visible, .brand:focus { outline: none !important; box-shadow: none !important; }
+
+/* ── Border radius — high specificity overrides ───────────── */
+button.btn, a.btn, input[type="submit"].btn,
+.btn, button, input[type="submit"],
+.page-btn, .checkout-btn { border-radius: 10px !important; }
+
+.nav-search { border-radius: 50px !important; overflow: hidden; }
+.nav-search-input { border-radius: 50px 0 0 50px !important; }
+.nav-search-btn { border-radius: 0 50px 50px 0 !important; }
+
+.product-card { border-radius: 16px !important; overflow: hidden; }
+.product-thumb { border-radius: 16px 16px 0 0 !important; }
+.detail-image { border-radius: 16px !important; }
+
+.order-summary, .payment-panel, .momo-details-card,
+.auth-container, .sim-banner { border-radius: 12px !important; }
+
+.btn-small { border-radius: 8px !important; }
+
+/* ── Mobile: logo closer to store name ───────────────────── */
+@media (max-width: 768px) {
+  .brand { gap: 0.3rem !important; }
+  .brand-logo { height: 1.6rem !important; }
+  .brand span { font-size: 1rem !important; letter-spacing: 0.08em !important; }
+}
