@@ -1443,3 +1443,23 @@ input, input:focus,
 
 /* Prevent brand flash during page load */
 .brand { position: relative; z-index: 1; }
+
+/* ── Dropdown + hamburger fixes ──────────────────────────── */
+@media (max-width: 768px) {
+  /* Allow dropdown to overflow the navbar */
+  .navbar, .sticky-nav {
+    overflow: visible !important;
+  }
+
+  /* Hamburger — more padding so lines fit comfortably */
+  .hamburger-btn {
+    padding: 6px 4px !important;
+    width: 30px !important;
+    height: 26px !important;
+    gap: 5px !important;
+  }
+  .hamburger-btn span {
+    height: 1.5px !important;
+    width: 20px !important;
+  }
+}
