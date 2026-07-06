@@ -1154,3 +1154,123 @@ button.btn, a.btn, input[type="submit"].btn,
   .brand-logo { height: 1.6rem !important; }
   .brand span { font-size: 1rem !important; letter-spacing: 0.08em !important; }
 }
+
+/* ═══════════════════════════════════════════════════════════
+   SLIDE-IN MENU, THINNER HAMBURGER, ANNOUNCE STRIP FIX
+   ═══════════════════════════════════════════════════════════ */
+
+/* ── Announce strip sub-line ──────────────────────────────── */
+.announce-strip { flex-direction: column; gap: 0.15rem; padding: 0.5rem 1rem; }
+.announce-sub {
+  font-size: 0.72rem;
+  letter-spacing: 0.06em;
+  opacity: 0.75;
+  text-transform: uppercase;
+  color: var(--cream);
+}
+
+/* ── Kill ALL outlines and box-shadows everywhere ─────────── */
+*, *:focus, *:active, *:hover,
+a, a:focus, a:active,
+button, button:focus, button:active,
+input, input:focus,
+.brand, .brand:focus, .brand:active,
+[class*="btn"], [class*="btn"]:focus {
+  outline: none !important;
+  box-shadow: none !important;
+  -webkit-tap-highlight-color: transparent !important;
+}
+*:focus-visible { outline: 2px solid var(--gold) !important; }
+
+/* ── Thinner hamburger lines ──────────────────────────────── */
+.hamburger-btn {
+  width: 22px !important;
+  height: 18px !important;
+  gap: 4px !important;
+}
+.hamburger-btn span {
+  height: 1.5px !important;
+  width: 100% !important;
+}
+
+/* ── Nav overlay backdrop ─────────────────────────────────── */
+.nav-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.55);
+  z-index: 198;
+  backdrop-filter: blur(2px);
+}
+.nav-overlay.nav-overlay-active { display: block; }
+
+/* ── Slide-in panel from right (mobile) ──────────────────── */
+@media (max-width: 768px) {
+  .nav-links {
+    display: flex !important;
+    position: fixed;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    width: 72vw;
+    max-width: 280px;
+    background: var(--panel);
+    border-left: 1px solid var(--gold-soft);
+    flex-direction: column;
+    align-items: flex-start;
+    padding: 1.5rem 0 2rem;
+    z-index: 199;
+    transform: translateX(100%);
+    transition: transform 0.3s cubic-bezier(.4,0,.2,1);
+    overflow-y: auto;
+    gap: 0 !important;
+  }
+  .nav-links.nav-menu-open { transform: translateX(0) !important; }
+
+  .nav-close-btn {
+    all: unset;
+    cursor: pointer;
+    font-size: 1.6rem;
+    color: var(--muted);
+    padding: 0 1.5rem 1rem;
+    display: block;
+    width: 100%;
+    text-align: right;
+    line-height: 1;
+  }
+  .nav-close-btn:hover { color: var(--gold); }
+
+  .nav-links a,
+  .nav-links .nav-greeting {
+    padding: 0.9rem 1.5rem;
+    width: 100%;
+    display: block;
+    font-size: 0.95rem;
+    color: var(--cream);
+    border-bottom: 1px solid var(--gold-soft);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+  .nav-links a:hover { color: var(--gold); background: rgba(201,162,39,0.05); }
+  .nav-links .nav-divider { display: none !important; }
+  .nav-links .logout-form { width: 100%; }
+  .nav-links .logout-btn {
+    font-size: 0.95rem;
+    padding: 0.9rem 1.5rem;
+    text-align: left;
+    width: 100%;
+    display: block;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--cream);
+    border-bottom: 1px solid var(--gold-soft);
+    cursor: pointer;
+  }
+  .nav-links .logout-btn:hover { color: var(--gold); }
+}
+
+/* ── Hide close button on desktop ────────────────────────── */
+@media (min-width: 769px) {
+  .nav-close-btn { display: none !important; }
+  .nav-overlay { display: none !important; }
+}
