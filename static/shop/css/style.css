@@ -1685,3 +1685,131 @@ input, input:focus,
   .nav-links a::after { left: 1.5rem !important; transform: scaleX(0) !important; }
   .nav-links a:hover::after { transform: scaleX(1) !important; }
 }
+
+/* ═══════════════════════════════════════════════════════════
+   FINAL POLISH PASS — outlines, border-radius, mobile
+   ═══════════════════════════════════════════════════════════ */
+
+/* ── 1. NUCLEAR outline & tap-highlight removal ──────────── */
+html, body, div, span, a, button, input, textarea, select,
+form, img, svg, nav, header, footer, section, article,
+*, *::before, *::after,
+*:focus, *:active, *:hover, *:visited, *:focus-within {
+  outline: 0 !important;
+  outline-style: none !important;
+  outline-width: 0 !important;
+  -webkit-tap-highlight-color: rgba(0,0,0,0) !important;
+  -webkit-touch-callout: none;
+}
+input:focus, textarea:focus, select:focus, button:focus,
+a:focus, .brand:focus, .btn:focus {
+  outline: 0 !important;
+  box-shadow: none !important;
+}
+/* Keyboard accessibility only */
+a:focus-visible, button:focus-visible, input:focus-visible {
+  outline: 2px solid var(--gold) !important;
+  outline-offset: 2px !important;
+}
+
+/* ── 2. Border radius — every component ──────────────────── */
+/* Buttons */
+button, .btn, .btn-small, .checkout-btn, .error-btn,
+.hero-btn, .pay-btn, .page-btn, .whatsapp-confirm-btn,
+input[type="submit"], .btn-remove, .btn-disabled {
+  border-radius: 10px !important;
+}
+/* Cards & panels */
+.product-card, .detail-image, .bottle-placeholder.large {
+  border-radius: 16px !important;
+  overflow: hidden;
+}
+.product-thumb { border-radius: 16px 16px 0 0 !important; }
+.order-summary, .payment-panel, .momo-details-card,
+.auth-container, .sim-banner, .cart-table, .checkout-form,
+.detail-specs, .cart-summary, .messages li {
+  border-radius: 12px !important;
+}
+/* Inputs */
+input[type="text"], input[type="email"], input[type="password"],
+input[type="number"], input[type="search"], textarea, select,
+.qty-input {
+  border-radius: 8px !important;
+}
+/* Search — pill */
+.nav-search { border-radius: 50px !important; overflow: hidden !important; }
+.nav-search-input { border-radius: 50px 0 0 50px !important; }
+.nav-search-btn { border-radius: 0 50px 50px 0 !important; }
+/* Badges — pill */
+.badge, .badge-conc, .badge-out, .status-badge, .cart-badge,
+.momo-ref, .momo-num {
+  border-radius: 20px !important;
+}
+/* Images inside cards */
+.product-thumb img, .detail-image img { border-radius: inherit; }
+
+/* ── 3. Mobile responsiveness hardening ──────────────────── */
+@media (max-width: 768px) {
+  /* Base spacing */
+  .page-container { padding: 1.5rem 1.1rem !important; }
+  h1 { font-size: 1.6rem !important; }
+  h2 { font-size: 1.35rem !important; }
+
+  /* Hero */
+  .hero { padding: 2.5rem 1.1rem !important; }
+  .hero-title { font-size: 1.7rem !important; }
+  .hero-sub { font-size: 0.9rem !important; }
+
+  /* Product grid: 2 columns on mobile */
+  .product-grid, .related-grid {
+    grid-template-columns: 1fr 1fr !important;
+    gap: 0.9rem !important;
+  }
+  .product-name { font-size: 0.95rem !important; }
+  .product-price { font-size: 0.9rem !important; }
+  .product-info { padding: 0.8rem !important; }
+
+  /* Why strip: 2x2 grid */
+  .why-inner {
+    grid-template-columns: 1fr 1fr !important;
+    gap: 1.5rem 1rem !important;
+  }
+  .why-title { font-size: 0.85rem !important; }
+  .why-sub { font-size: 0.72rem !important; }
+
+  /* Detail page */
+  .detail-grid { gap: 1.5rem !important; }
+  .detail-specs { grid-template-columns: 1fr 1fr !important; }
+
+  /* Cart & checkout & payment: single column (already set, reinforce) */
+  .checkout-grid, .payment-grid { grid-template-columns: 1fr !important; gap: 1.5rem !important; }
+  .cart-row { grid-template-columns: 1fr !important; }
+
+  /* MoMo payment card */
+  .momo-details-card { margin-left: 0 !important; }
+  .whatsapp-confirm-btn { margin-left: 0 !important; }
+  .momo-note { margin-left: 0 !important; }
+
+  /* Forms full width */
+  .auth-container { padding: 1.5rem 1.2rem !important; margin: 1rem auto !important; }
+
+  /* Footer stacks cleanly */
+  .footer-inner { grid-template-columns: 1fr !important; gap: 1.8rem !important; }
+
+  /* Tap targets: min 44px */
+  .nav-links a, .nav-links .logout-btn,
+  .btn, button[type="submit"] {
+    min-height: 44px !important;
+  }
+
+  /* WhatsApp + back-to-top don't overlap content */
+  .whatsapp-btn { bottom: 4.5rem !important; right: 1rem !important; width: 46px !important; height: 46px !important; }
+  .back-to-top { right: 1rem !important; }
+}
+
+/* Very small phones */
+@media (max-width: 380px) {
+  .product-grid, .related-grid { grid-template-columns: 1fr !important; }
+  .brand span { font-size: 0.9rem !important; }
+  .why-inner { grid-template-columns: 1fr !important; }
+}
