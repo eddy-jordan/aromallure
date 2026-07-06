@@ -1813,3 +1813,34 @@ input[type="number"], input[type="search"], textarea, select,
   .brand span { font-size: 0.9rem !important; }
   .why-inner { grid-template-columns: 1fr !important; }
 }
+
+/* ── Hamburger lines even closer together ────────────────── */
+@media (max-width: 768px) {
+  .hamburger-btn {
+    gap: 2px !important;
+  }
+}
+
+/* ── Login/Sign Up icons ──────────────────────────────────── */
+.nav-link-icon {
+  display: inline-flex !important;
+  align-items: center;
+  gap: 0.5rem;
+}
+.nav-link-icon svg {
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
+}
+
+@media (max-width: 768px) {
+  .nav-links a.nav-link-icon {
+    display: flex !important;
+    align-items: center !important;
+    gap: 0.7rem !important;
+  }
+  .nav-links a.nav-link-icon svg {
+    width: 17px;
+    height: 17px;
+  }
+}
