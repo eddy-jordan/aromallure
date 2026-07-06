@@ -1375,40 +1375,34 @@ input, input:focus,
   /* Show hamburger on mobile */
   .hamburger-btn { display: flex !important; }
 
-  /* Slide-in panel */
+  /* Simple dropdown menu */
   .nav-links {
-    display: flex !important;
-    position: fixed !important;
-    top: 0 !important;
+    display: none !important;
+    position: absolute !important;
+    top: 100% !important;
+    left: 0 !important;
     right: 0 !important;
-    bottom: 0 !important;
-    width: 70vw !important;
-    max-width: 260px !important;
     background: var(--panel) !important;
-    border-left: 1px solid var(--gold-soft) !important;
+    border-top: 1px solid var(--gold-soft) !important;
+    border-bottom: 1px solid var(--gold-soft) !important;
     flex-direction: column !important;
     align-items: flex-start !important;
-    padding: 1.2rem 0 2rem !important;
+    padding: 0.4rem 0 !important;
     z-index: 199 !important;
-    transform: translateX(100%) !important;
-    transition: transform 0.3s cubic-bezier(.4,0,.2,1) !important;
-    overflow-y: auto !important;
-    gap: 0 !important;
-    border-radius: 0 !important;
-  }
-  .nav-links.nav-menu-open { transform: translateX(0) !important; }
-
-  .nav-close-btn {
-    all: unset !important;
-    cursor: pointer !important;
-    font-size: 1.5rem !important;
-    color: var(--muted) !important;
-    padding: 0 1.3rem 0.8rem !important;
-    display: block !important;
-    text-align: right !important;
+    transform: none !important;
+    transition: none !important;
     width: 100% !important;
-    box-sizing: border-box !important;
+    max-width: 100% !important;
+    height: auto !important;
+    border-left: none !important;
+    border-radius: 0 !important;
+    overflow: visible !important;
   }
+  .nav-links.nav-menu-open {
+    display: flex !important;
+    transform: none !important;
+  }
+  .nav-close-btn { display: none !important; }
 
   .nav-links a,
   .nav-links .nav-greeting {
