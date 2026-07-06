@@ -1628,3 +1628,28 @@ input, input:focus,
     letter-spacing: 0.1em !important;
   }
 }
+
+/* ── Reduce dropdown menu size ────────────────────────────── */
+@media (max-width: 768px) {
+  .nav-links,
+  .nav-links.nav-menu-open {
+    padding: 0.7rem 0 1.1rem !important;
+  }
+  .nav-links a,
+  .nav-links .nav-greeting {
+    font-size: 0.95rem !important;
+    padding: 0.5rem 2rem !important;
+  }
+  .nav-links .logout-btn {
+    font-size: 0.95rem !important;
+    padding: 0.5rem 2rem !important;
+  }
+  .nav-links::before {
+    padding: 0 0 0.6rem !important;
+    font-size: 0.6rem !important;
+  }
+  .nav-links::after {
+    padding: 0.8rem 2rem 0 !important;
+    font-size: 0.68rem !important;
+  }
+}
