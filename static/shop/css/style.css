@@ -1668,3 +1668,20 @@ input, input:focus,
     outline: none !important;
   }
 }
+
+/* ── Dropdown links aligned left ─────────────────────────── */
+@media (max-width: 768px) {
+  .nav-links a,
+  .nav-links .nav-greeting,
+  .nav-links .logout-btn {
+    text-align: left !important;
+    padding-left: 1.5rem !important;
+  }
+  .nav-links::before,
+  .nav-links::after {
+    text-align: left !important;
+    padding-left: 1.5rem !important;
+  }
+  .nav-links a::after { left: 1.5rem !important; transform: scaleX(0) !important; }
+  .nav-links a:hover::after { transform: scaleX(1) !important; }
+}
