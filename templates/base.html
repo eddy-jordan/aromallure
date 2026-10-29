@@ -24,12 +24,23 @@
       <img src="{% static 'shop/img/logo-full.png' %}" alt="" class="entrance-logo-img">
     </div>
     <span class="entrance-line"></span>
+    {% if black_friday %}<span class="entrance-bf">Black Friday</span>{% endif %}
   </div>
   {% endif %}
 
+  {% if black_friday %}
+  <div class="announce-strip bf-strip">
+    <span class="bf-strip-label">
+      <strong>Black Friday</strong>
+      {% if black_friday.phase == 'upcoming' %}starts in{% else %}ends in{% endif %}
+    </span>
+    {% include 'shop/_bf_countdown.html' with compact=True %}
+  </div>
+  {% else %}
   <div class="announce-strip">
     <em><strong>Premium fragrances delivered worldwide</strong></em>
   </div>
+  {% endif %}
 
   <!-- Overlay backdrop for mobile slide menu -->
   <nav class="navbar sticky-nav">
@@ -250,6 +261,48 @@
         if (e.animationName === 'splash-overlay-out') overlay.remove();
       });
       setTimeout(function () { if (overlay && overlay.parentNode) overlay.remove(); }, 2600);
+    })();
+
+    // ── Black Friday countdown ────────────────────────────────
+    // Counts down from the seconds the server rendered (not the device
+    // clock, so a wrong phone clock can't skew it). At zero the page reloads
+    // once so the server can flip it from "starts in" to "ends in" or remove
+    // the campaign. The sessionStorage guard stops any reload loop.
+    (function () {
+      var boxes = document.querySelectorAll('[data-bf-countdown]');
+      if (!boxes.length) return;
+      var left = parseInt(boxes[0].getAttribute('data-seconds'), 10);
+      if (isNaN(left)) return;
+      var startedAt = Date.now();
+      var total = left;
+      function pad(n) { return (n < 10 ? '0' : '') + n; }
+      function render() {
+        var s = Math.max(0, total - Math.floor((Date.now() - startedAt) / 1000));
+        var parts = {
+          d: Math.floor(s / 86400),
+          h: Math.floor((s % 86400) / 3600),
+          m: Math.floor((s % 3600) / 60),
+          s: s % 60
+        };
+        boxes.forEach(function (box) {
+          Object.keys(parts).forEach(function (k) {
+            var el = box.querySelector('[data-unit="' + k + '"]');
+            if (el) el.textContent = pad(parts[k]);
+          });
+        });
+        if (s === 0) {
+          clearInterval(timer);
+          try {
+            var last = parseInt(sessionStorage.getItem('bf-reload') || '0', 10);
+            if (Date.now() - last > 60000) {
+              sessionStorage.setItem('bf-reload', String(Date.now()));
+              setTimeout(function () { window.location.reload(); }, 1500);
+            }
+          } catch (e) {}
+        }
+      }
+      var timer = setInterval(render, 1000);
+      render();
     })();
 
     // ── Back to top ───────────────────────────────────────────

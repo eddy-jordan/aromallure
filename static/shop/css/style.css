@@ -1845,3 +1845,103 @@ input[type="number"], input[type="search"], textarea, select,
     height: 17px;
   }
 }
+
+/* ═══════════════════════════════════════════════════════════
+   BLACK FRIDAY CAMPAIGN
+   Shown only while settings.BLACK_FRIDAY_* dates make the
+   black_friday context variable truthy. Black + gold in both
+   themes on purpose: the campaign look should not flip to ivory.
+   ═══════════════════════════════════════════════════════════ */
+.bf-strip,
+[data-theme="light"] .bf-strip {
+  background: #000;
+  color: #E7C45A;
+  flex-direction: row;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 0.35rem 0.9rem;
+  border-bottom: 1px solid rgba(201,162,39,0.55);
+}
+.bf-strip-label { font-size: 0.74rem; letter-spacing: 0.1em; text-transform: uppercase; }
+.bf-strip-label strong { color: #fff; letter-spacing: 0.14em; margin-right: 0.25rem; }
+
+.bf-countdown { display: flex; justify-content: center; gap: 0.6rem; }
+.bf-countdown--compact { display: inline-flex; }
+.bf-unit { display: flex; flex-direction: column; align-items: center; min-width: 3.6rem; }
+.bf-unit b {
+  font-family: 'Playfair Display', serif;
+  font-weight: 600;
+  font-size: 2rem;
+  line-height: 1;
+  color: var(--gold);
+  font-variant-numeric: tabular-nums;
+  padding: 0.55rem 0.5rem;
+  min-width: 3.6rem;
+  text-align: center;
+  background: #000;
+  border: 1px solid rgba(201,162,39,0.55);
+  border-radius: 8px;
+}
+.bf-unit i {
+  font-style: normal;
+  margin-top: 0.4rem;
+  font-size: 0.62rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.bf-countdown--compact { gap: 0.3rem; }
+.bf-countdown--compact .bf-unit { flex-direction: row; align-items: baseline; min-width: 0; gap: 0.15rem; }
+.bf-countdown--compact .bf-unit b {
+  font-family: 'Jost', sans-serif;
+  font-size: 0.8rem;
+  min-width: 0;
+  padding: 0.15rem 0.35rem;
+  color: #fff;
+  border-radius: 5px;
+}
+.bf-countdown--compact .bf-unit i { margin: 0; font-size: 0.6rem; color: #E7C45A; opacity: 0.8; }
+
+.hero--bf {
+  background:
+    radial-gradient(ellipse at 50% 0%, rgba(201,162,39,0.22), transparent 60%),
+    linear-gradient(180deg, #000 0%, #0B0A08 100%);
+  border-bottom: 1px solid rgba(201,162,39,0.55);
+}
+.hero--bf .hero-title { color: #fff; }
+.hero--bf .hero-sub { color: #CFC3AB; }
+.hero--bf .bf-eyebrow { color: var(--gold); letter-spacing: 0.22em; }
+[data-theme="light"] .hero--bf .bf-eyebrow { color: #E7C45A; }
+.bf-hero-label {
+  display: block;
+  margin: 1.8rem 0 0.8rem;
+  font-size: 0.72rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: #CFC3AB;
+}
+.hero--bf .bf-countdown { margin-bottom: 1.8rem; }
+
+.entrance-bf {
+  margin-top: 1rem;
+  font-size: 0.8rem;
+  letter-spacing: 0.4em;
+  text-transform: uppercase;
+  color: var(--gold);
+  opacity: 0;
+}
+@keyframes bf-tag-in { 0% { opacity: 0; transform: translateY(6px); } 100% { opacity: 1; transform: translateY(0); } }
+@media (prefers-reduced-motion: no-preference) {
+  .entrance-bf { animation: bf-tag-in 0.5s 0.9s ease-out forwards; }
+}
+
+@media (max-width: 640px) {
+  .bf-unit, .bf-unit b { min-width: 3rem; }
+  .bf-unit b { font-size: 1.5rem; padding: 0.45rem 0.35rem; }
+  .bf-countdown { gap: 0.4rem; }
+  .bf-strip-label { font-size: 0.68rem; }
+  .bf-countdown--compact .bf-unit { min-width: 0; }
+  .bf-countdown--compact .bf-unit b { font-size: 0.75rem; min-width: 0; padding: 0.15rem 0.3rem; }
+}

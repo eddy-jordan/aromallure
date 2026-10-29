@@ -91,6 +91,7 @@ TEMPLATES = [
                 'django.contrib.messages.context_processors.messages',
                 'shop.context_processors.store_name',
                 'shop.context_processors.cart_count',
+                'shop.context_processors.black_friday',
             ],
         },
     },
@@ -250,6 +251,29 @@ LOGIN_URL = 'login'
 
 # Store branding — change this one line to rename the store everywhere
 SITE_NAME = 'Aromallure'
+
+# ── Black Friday campaign (look, banner and countdown only, no price changes) ─
+# Before BLACK_FRIDAY_START the site shows a "starts in" countdown; between
+# START and END it shows "ends in"; after END everything disappears on its own.
+# Times are UTC, which is the same as Ghana local time. Override with ISO
+# strings in the environment, e.g. BLACK_FRIDAY_END=2026-11-22T23:59:59+00:00.
+# Set BLACK_FRIDAY_ENABLED=False to switch the whole thing off.
+from datetime import datetime, timezone as _dt_timezone
+
+
+def _env_datetime(name, default):
+    raw = os.environ.get(name, '')
+    if not raw:
+        return default
+    parsed = datetime.fromisoformat(raw)
+    return parsed if parsed.tzinfo else parsed.replace(tzinfo=_dt_timezone.utc)
+
+
+BLACK_FRIDAY_ENABLED = os.environ.get('BLACK_FRIDAY_ENABLED', 'True') == 'True'
+BLACK_FRIDAY_START = _env_datetime(
+    'BLACK_FRIDAY_START', datetime(2026, 11, 20, 0, 0, 0, tzinfo=_dt_timezone.utc))
+BLACK_FRIDAY_END = _env_datetime(
+    'BLACK_FRIDAY_END', datetime(2026, 11, 20, 23, 59, 59, tzinfo=_dt_timezone.utc))
 
 # ── Manual MoMo payment details ─────────────────────────────────────────────
 MOMO_NUMBER      = os.environ.get('MOMO_NUMBER', '0505519010')

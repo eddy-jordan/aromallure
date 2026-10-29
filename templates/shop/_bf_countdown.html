@@ -1,0 +1,10 @@
+<div class="bf-countdown{% if compact %} bf-countdown--compact{% endif %}"
+     data-bf-countdown
+     data-seconds="{{ black_friday.seconds }}"
+     role="timer"
+     aria-label="{% if black_friday.phase == 'upcoming' %}Time until Black Friday starts{% else %}Time until Black Friday ends{% endif %}">
+  <span class="bf-unit"><b data-unit="d">{{ black_friday.days }}</b><i>Days</i></span>
+  <span class="bf-unit"><b data-unit="h">{{ black_friday.hours }}</b><i>Hrs</i></span>
+  <span class="bf-unit"><b data-unit="m">{{ black_friday.minutes }}</b><i>Min</i></span>
+  <span class="bf-unit"><b data-unit="s">{{ black_friday.secs }}</b><i>Sec</i></span>
+</div>
