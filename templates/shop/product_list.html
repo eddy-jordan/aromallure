@@ -226,6 +226,7 @@
       // finished; the new cards then fade in one after another in view.
       Promise.all([fetched, scrolled])
         .then(function (results) {
+          if (window.AromaReveal) window.AromaReveal.forget(grid);
           grid.innerHTML = results[0].grid.innerHTML;
           pager.innerHTML = results[0].pager.innerHTML;
           grid.classList.remove('is-paging');

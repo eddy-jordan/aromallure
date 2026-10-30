@@ -314,45 +314,62 @@
     })();
 
     // ── Scroll reveals ────────────────────────────────────────
-    // Elements marked [data-reveal] fade and rise into view. The hidden
-    // state only exists when the head script added .js-reveal (JS available,
-    // motion allowed), so everything is visible without it. Elements arriving
-    // together are staggered. When finished, data-reveal is removed so the
-    // element's normal hover transitions take over again.
-    // Exposed as window.AromaReveal.observe(root) for content added later
-    // (the collection pager swaps in new product cards).
+    // Elements marked [data-reveal] fade and rise into view, and replay every
+    // time they scroll back into view. The hidden state only exists when the
+    // head script added .js-reveal (JS available, motion allowed), so
+    // everything is visible without it. Elements arriving together are
+    // staggered.
+    //
+    // Replaying without flicker: an element is hidden again only once it is
+    // completely out of the viewport (second observer, threshold 0), so the
+    // visitor never sees it vanish. When a reveal has finished it gets
+    // .reveal-settled, which hands transitions back to the element's own CSS
+    // (card hover etc.).
+    // Exposed as window.AromaReveal.observe(root) / forget(root) for content
+    // swapped in and out later (the collection pager).
     window.AromaReveal = (function () {
       if (!document.documentElement.classList.contains('js-reveal')) {
-        return { observe: function () {} };
+        return { observe: function () {}, forget: function () {} };
       }
-      var io = new IntersectionObserver(function (entries) {
+
+      var enterIO = new IntersectionObserver(function (entries) {
         var shown = entries.filter(function (e) { return e.isIntersecting; });
         shown.forEach(function (entry, i) {
           var el = entry.target;
-          io.unobserve(el);
+          if (el.classList.contains('is-revealed')) return;
           var delay = Math.min(i, 8) * 80;
+          var token = (el.__rvToken = (el.__rvToken || 0) + 1);
           el.style.setProperty('--reveal-delay', delay + 'ms');
           el.classList.add('is-revealed');
-          var done = false;
-          function finish() {
-            if (done) return;
-            done = true;
-            el.removeAttribute('data-reveal');
-            el.classList.remove('is-revealed');
-            el.style.removeProperty('--reveal-delay');
-          }
-          el.addEventListener('transitionend', function (ev) {
-            if (ev.target === el && ev.propertyName === 'opacity') finish();
-          });
-          setTimeout(finish, 1600 + delay);
+          setTimeout(function () {
+            if (el.__rvToken === token && el.classList.contains('is-revealed')) {
+              el.classList.add('reveal-settled');
+              el.style.removeProperty('--reveal-delay');
+            }
+          }, 900 + delay);
         });
       }, { threshold: 0.12, rootMargin: '0px 0px -6% 0px' });
 
+      var leaveIO = new IntersectionObserver(function (entries) {
+        entries.forEach(function (entry) {
+          var el = entry.target;
+          if (entry.isIntersecting || !el.classList.contains('is-revealed')) return;
+          el.__rvToken = (el.__rvToken || 0) + 1;
+          el.classList.remove('is-revealed', 'reveal-settled');
+        });
+      }, { threshold: 0 });
+
+      function each(scope, fn) {
+        (scope || document).querySelectorAll('[data-reveal]').forEach(fn);
+      }
       function observe(scope) {
-        (scope || document).querySelectorAll('[data-reveal]').forEach(function (el) { io.observe(el); });
+        each(scope, function (el) { enterIO.observe(el); leaveIO.observe(el); });
+      }
+      function forget(scope) {
+        each(scope, function (el) { enterIO.unobserve(el); leaveIO.unobserve(el); });
       }
       observe(document);
-      return { observe: observe };
+      return { observe: observe, forget: forget };
     })();
 
     // ── Hero depth (slow parallax on scroll) ──────────────────
