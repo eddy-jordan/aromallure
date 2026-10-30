@@ -5,7 +5,7 @@
   <a href="{% url 'product_list' %}" class="back-link">&larr; The Collection</a>
 
   <div class="detail-grid">
-    <div class="detail-image">
+    <div class="detail-image" data-reveal>
       {% if product.image_url %}
         <img src="{{ product.image_url }}" alt="{{ product.name }}">
       {% elif product.image %}
@@ -20,7 +20,7 @@
       {% endif %}
     </div>
 
-    <div class="detail-info">
+    <div class="detail-info" data-reveal>
       <span class="product-brand">{{ product.brand }}</span>
       <h1>{{ product.name }}</h1>
 
@@ -74,11 +74,11 @@
   </div>
 
   {% if related %}
-  <div class="related-section">
+  <div class="related-section" data-reveal>
     <h2 class="related-title">You Might Also Like</h2>
     <div class="related-grid">
       {% for p in related %}
-      <a href="{% url 'product_detail' p.slug %}" class="product-card{% if not p.in_stock %} is-out{% endif %}">
+      <a href="{% url 'product_detail' p.slug %}" class="product-card{% if not p.in_stock %} is-out{% endif %}" data-reveal>
         <div class="product-thumb">
           {% if p.image_url %}
             <img src="{{ p.image_url }}" alt="{{ p.name }}">

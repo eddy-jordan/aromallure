@@ -13,6 +13,14 @@
       var saved = localStorage.getItem('theme');
       var theme = saved === 'light' ? 'light' : 'dark';
       document.documentElement.setAttribute('data-theme', theme);
+      // Scroll reveals hide content until it scrolls into view, so only turn
+      // them on when JS can reveal it again and the visitor allows motion.
+      try {
+        if ('IntersectionObserver' in window &&
+            !window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+          document.documentElement.classList.add('js-reveal');
+        }
+      } catch (e) {}
     })();
   </script>
 </head>
@@ -141,14 +149,14 @@
   <footer class="site-footer">
     <div class="footer-inner">
 
-      <div class="footer-col footer-col-brand">
+      <div class="footer-col footer-col-brand" data-reveal>
         <span class="footer-brand">{{ store_name|upper }}</span>
         <p class="footer-tagline">Elegance in a bottle.</p>
         <p class="footer-copy">Est. 2022 &middot; Kwabenya, Accra, Ghana</p>
         <p class="footer-copy">&copy; 2022&ndash;{% now "Y" %} {{ store_name }}. All rights reserved.</p>
       </div>
 
-      <div class="footer-col footer-col-contact">
+      <div class="footer-col footer-col-contact" data-reveal>
         <h4 class="footer-heading">Contact</h4>
         <ul class="footer-contact-list">
           <li>
@@ -166,7 +174,7 @@
         </ul>
       </div>
 
-      <div class="footer-col footer-col-social">
+      <div class="footer-col footer-col-social" data-reveal>
         <h4 class="footer-heading">Follow Us</h4>
         <div class="social-icons">
           <a href="https://www.instagram.com/aromalluregh?igsh=MTgyNGlrdnZzaGhrOQ==" target="_blank" rel="noopener noreferrer" class="social-link" aria-label="Aromallure on Instagram">
@@ -303,6 +311,114 @@
       }
       var timer = setInterval(render, 1000);
       render();
+    })();
+
+    // ── Scroll reveals ────────────────────────────────────────
+    // Elements marked [data-reveal] fade and rise into view. The hidden
+    // state only exists when the head script added .js-reveal (JS available,
+    // motion allowed), so everything is visible without it. Elements arriving
+    // together are staggered. When finished, data-reveal is removed so the
+    // element's normal hover transitions take over again.
+    // Exposed as window.AromaReveal.observe(root) for content added later
+    // (the collection pager swaps in new product cards).
+    window.AromaReveal = (function () {
+      if (!document.documentElement.classList.contains('js-reveal')) {
+        return { observe: function () {} };
+      }
+      var io = new IntersectionObserver(function (entries) {
+        var shown = entries.filter(function (e) { return e.isIntersecting; });
+        shown.forEach(function (entry, i) {
+          var el = entry.target;
+          io.unobserve(el);
+          var delay = Math.min(i, 8) * 80;
+          el.style.setProperty('--reveal-delay', delay + 'ms');
+          el.classList.add('is-revealed');
+          var done = false;
+          function finish() {
+            if (done) return;
+            done = true;
+            el.removeAttribute('data-reveal');
+            el.classList.remove('is-revealed');
+            el.style.removeProperty('--reveal-delay');
+          }
+          el.addEventListener('transitionend', function (ev) {
+            if (ev.target === el && ev.propertyName === 'opacity') finish();
+          });
+          setTimeout(finish, 1600 + delay);
+        });
+      }, { threshold: 0.12, rootMargin: '0px 0px -6% 0px' });
+
+      function observe(scope) {
+        (scope || document).querySelectorAll('[data-reveal]').forEach(function (el) { io.observe(el); });
+      }
+      observe(document);
+      return { observe: observe };
+    })();
+
+    // ── Hero depth (slow parallax on scroll) ──────────────────
+    (function () {
+      var hero = document.querySelector('.hero');
+      if (!hero || window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+      var ticking = false;
+      function update() {
+        ticking = false;
+        var limit = hero.offsetHeight + 120;
+        var y = Math.min(window.pageYOffset, limit);
+        hero.style.setProperty('--hero-shift', y + 'px');
+      }
+      window.addEventListener('scroll', function () {
+        if (!ticking) { ticking = true; requestAnimationFrame(update); }
+      }, { passive: true });
+    })();
+
+    // ── Cart badge pop when the count goes up ─────────────────
+    (function () {
+      var badge = document.querySelector('.cart-badge');
+      var count = badge ? parseInt(badge.textContent, 10) || 0 : 0;
+      try {
+        var prev = sessionStorage.getItem('aroma-cart-count');
+        if (prev !== null && count > parseInt(prev, 10)) {
+          var link = document.querySelector('.cart-link');
+          if (badge) badge.classList.add('cart-badge--pop');
+          if (link) link.classList.add('cart-link--wiggle');
+        }
+        sessionStorage.setItem('aroma-cart-count', String(count));
+      } catch (e) {}
+    })();
+
+    // ── Add to cart feedback ──────────────────────────────────
+    // Shows a busy state so a tap clearly registers (and can't be double-
+    // submitted). pageshow resets it if the visitor comes back with the
+    // browser's back button.
+    (function () {
+      var forms = document.querySelectorAll('.add-to-cart-form');
+      forms.forEach(function (form) {
+        var btn = form.querySelector('button[type="submit"]');
+        if (!btn) return;
+        var label = btn.textContent;
+        form.addEventListener('submit', function () {
+          btn.classList.add('is-loading');
+          btn.textContent = 'Adding…';
+          setTimeout(function () { btn.disabled = true; }, 0);
+        });
+        window.addEventListener('pageshow', function () {
+          btn.classList.remove('is-loading');
+          btn.textContent = label;
+          btn.disabled = false;
+        });
+      });
+    })();
+
+    // ── Theme toggle spin ─────────────────────────────────────
+    (function () {
+      var toggle = document.getElementById('theme-toggle');
+      if (!toggle) return;
+      toggle.addEventListener('click', function () {
+        toggle.classList.remove('is-spinning');
+        void toggle.offsetWidth;
+        toggle.classList.add('is-spinning');
+        setTimeout(function () { toggle.classList.remove('is-spinning'); }, 600);
+      });
     })();
 
     // ── Back to top ───────────────────────────────────────────

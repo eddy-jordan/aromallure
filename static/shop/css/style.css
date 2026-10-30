@@ -1998,3 +1998,119 @@ input[type="number"], input[type="search"], textarea, select,
 .product-grid { transition: opacity 0.2s ease; }
 /* Not the homepage entrance (search / page 2+): show the hero immediately, no delayed fade. */
 .hero.hero--instant { animation: none; }
+
+/* ═══════════════════════════════════════════════════════════
+   MOTION
+   Subtle, slow movement for a luxury feel. Everything that moves
+   is either behind prefers-reduced-motion: no-preference, or only
+   exists when the head script added .js-reveal (which it skips for
+   reduced motion). Hover effects are limited to real hover devices.
+   ═══════════════════════════════════════════════════════════ */
+
+/* ── 1. Scroll reveals ────────────────────────────────────
+   Uses the standalone `translate` property (not `transform`) so it
+   never fights the cards' own hover transform. The revealed rule sets
+   no values: elements simply transition from hidden back to their
+   normal styles (so a sold-out card still ends at its own opacity). */
+.js-reveal [data-reveal]:not(.is-revealed) { opacity: 0; translate: 0 22px; }
+.js-reveal [data-reveal].is-revealed {
+  transition:
+    opacity 0.8s ease var(--reveal-delay, 0ms),
+    translate 0.8s cubic-bezier(0.2, 0.7, 0.2, 1) var(--reveal-delay, 0ms);
+}
+
+/* ── 2. Product card hover ────────────────────────────── */
+.product-card {
+  transition: border-color 0.3s ease, transform 0.4s cubic-bezier(0.2, 0.7, 0.2, 1), box-shadow 0.4s ease;
+}
+.product-thumb { overflow: hidden; }
+.product-thumb img,
+.product-thumb .bottle-icon { transition: transform 0.9s cubic-bezier(0.2, 0.7, 0.2, 1); }
+.product-price { transition: text-shadow 0.4s ease; }
+@media (hover: hover) {
+  .product-card:hover {
+    transform: translateY(-6px);
+    /* !important: an earlier rule forces box-shadow:none on every <a>/button */
+    box-shadow: 0 16px 36px rgba(0, 0, 0, 0.35), 0 0 28px rgba(var(--gold-rgb), 0.2) !important;
+  }
+  [data-theme="light"] .product-card:hover {
+    box-shadow: 0 16px 32px rgba(120, 90, 20, 0.18), 0 0 24px rgba(var(--gold-rgb), 0.18) !important;
+  }
+  .product-card:hover .product-thumb img { transform: scale(1.07); }
+  .product-card:hover .bottle-icon { transform: scale(1.07); }
+  .product-card:hover .product-price { text-shadow: 0 0 14px rgba(var(--gold-rgb), 0.45); }
+}
+
+/* ── 3. Page-through transition for the collection ─────── */
+.product-grid { transition: opacity 0.25s ease, translate 0.25s ease; }
+.product-grid.is-paging { opacity: 0.3; translate: 0 8px; }
+
+/* ── 4. Hero depth: drifting glow + slow parallax ───────── */
+.hero { position: relative; overflow: hidden; }
+.hero-inner {
+  position: relative;
+  z-index: 1;
+  translate: 0 calc(var(--hero-shift, 0px) * 0.22);
+}
+.hero::before {
+  content: '';
+  position: absolute;
+  inset: -40% -20%;
+  z-index: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(ellipse at 30% 40%, rgba(var(--gold-rgb), 0.16), transparent 55%),
+    radial-gradient(ellipse at 75% 60%, rgba(var(--gold-rgb), 0.1), transparent 60%);
+  translate: 0 calc(var(--hero-shift, 0px) * 0.5);
+}
+@keyframes hero-drift {
+  0%   { transform: translate3d(-4%, -2%, 0) scale(1); }
+  100% { transform: translate3d(4%, 3%, 0) scale(1.12); }
+}
+
+/* ── 5. Small touches ───────────────────────────────────── */
+.btn, .btn-small, .page-btn, .hero-btn, .checkout-btn, .pay-btn {
+  transition: background 0.2s, color 0.2s, border-color 0.2s, box-shadow 0.25s, transform 0.15s ease;
+}
+.btn:not(:disabled):active, .btn-small:active, .page-btn:active,
+.hero-btn:active, .checkout-btn:active, .pay-btn:active { transform: scale(0.97); }
+@media (hover: hover) {
+  .btn:not(:disabled):hover, .hero-btn:hover, .checkout-btn:hover, .pay-btn:hover {
+    box-shadow: 0 6px 18px rgba(var(--gold-rgb), 0.35) !important;
+  }
+}
+.qty-input:focus { border-color: var(--gold); box-shadow: 0 0 0 3px rgba(var(--gold-rgb), 0.2) !important; }
+
+.btn.is-loading { position: relative; overflow: hidden; pointer-events: none; opacity: 0.85; }
+.btn.is-loading::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(100deg, transparent 30%, rgba(255, 255, 255, 0.35) 50%, transparent 70%);
+  transform: translateX(-100%);
+}
+
+.badge.badge-sale, .sale-tag { overflow: hidden; }
+.sale-tag { position: relative; }
+.badge.badge-sale::after, .sale-tag::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(100deg, transparent 35%, rgba(231, 196, 90, 0.55) 50%, transparent 65%);
+  transform: translateX(-120%);
+}
+
+@keyframes badge-pop { 0% { transform: scale(0.3); } 55% { transform: scale(1.5); } 100% { transform: scale(1); } }
+@keyframes cart-wiggle { 0%, 100% { rotate: 0deg; } 25% { rotate: -12deg; } 55% { rotate: 10deg; } 80% { rotate: -5deg; } }
+@keyframes theme-spin { to { transform: rotate(360deg); } }
+@keyframes btn-shimmer { to { transform: translateX(100%); } }
+@keyframes sale-shine { 0%, 55% { transform: translateX(-120%); } 100% { transform: translateX(120%); } }
+
+@media (prefers-reduced-motion: no-preference) {
+  .hero::before { animation: hero-drift 20s ease-in-out infinite alternate; }
+  .btn.is-loading::after { animation: btn-shimmer 0.9s ease-in-out infinite; }
+  .badge.badge-sale::after, .sale-tag::after { animation: sale-shine 4s ease-in-out infinite; }
+  .cart-badge--pop { animation: badge-pop 0.6s cubic-bezier(0.2, 0.9, 0.3, 1.4); }
+  .cart-link--wiggle svg { transform-origin: 50% 80%; animation: cart-wiggle 0.6s ease; }
+  .theme-toggle.is-spinning { animation: theme-spin 0.55s cubic-bezier(0.4, 0, 0.2, 1); }
+}

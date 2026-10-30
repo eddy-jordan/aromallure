@@ -31,14 +31,14 @@
 
 <section class="why-strip">
   <div class="why-inner">
-    <div class="why-item">
+    <div class="why-item" data-reveal>
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" class="why-icon" aria-hidden="true">
         <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
       </svg>
       <span class="why-title">Premium Quality</span>
       <span class="why-sub">Only the finest scent notes, no fillers</span>
     </div>
-    <div class="why-item">
+    <div class="why-item" data-reveal>
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" class="why-icon" aria-hidden="true">
         <path d="M9 3h6M10 3v3l-2 2v11a2 2 0 002 2h4a2 2 0 002-2V8l-2-2V3"/>
         <path d="M8 12c0-1 .5-2 2-2s2 1 2 2-.5 2-2 2-2-1-2-2z"/>
@@ -46,14 +46,14 @@
       <span class="why-title">Elegance in a Bottle</span>
       <span class="why-sub">Est. 2022</span>
     </div>
-    <div class="why-item">
+    <div class="why-item" data-reveal>
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" class="why-icon" aria-hidden="true">
         <path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/>
       </svg>
       <span class="why-title">10,000+ Customers</span>
       <span class="why-sub">Trusted by fragrance lovers</span>
     </div>
-    <div class="why-item">
+    <div class="why-item" data-reveal>
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" class="why-icon" aria-hidden="true">
         <path d="M5 12h14M12 5l7 7-7 7"/>
       </svg>
@@ -64,7 +64,7 @@
 </section>
 
 <div class="page-container" id="collection">
-  <div class="catalog-header">
+  <div class="catalog-header" data-reveal>
     {% if query %}
       <h2>Search Results for "{{ query }}"</h2>
       <p class="catalog-sub">
@@ -82,7 +82,7 @@
 
   <div class="product-grid">
     {% for product in products %}
-    <a href="{% url 'product_detail' product.slug %}" class="product-card{% if not product.in_stock %} is-out{% endif %}">
+    <a href="{% url 'product_detail' product.slug %}" class="product-card{% if not product.in_stock %} is-out{% endif %}" data-reveal>
       <div class="product-thumb">
         {% if product.image_url %}
           <img src="{{ product.image_url }}" alt="{{ product.name }}">
@@ -192,7 +192,7 @@
     }
 
     function load(url, push) {
-      grid.style.opacity = '0.45';
+      grid.classList.add('is-paging');
       fetch(url, { credentials: 'same-origin' })
         .then(function (r) { if (!r.ok) throw new Error('bad status'); return r.text(); })
         .then(function (html) {
@@ -202,7 +202,9 @@
           if (!newGrid || !newPager) throw new Error('unexpected page');
           grid.innerHTML = newGrid.innerHTML;
           pager.innerHTML = newPager.innerHTML;
-          grid.style.opacity = '';
+          grid.classList.remove('is-paging');
+          // New cards arrive hidden and fade in one after another.
+          if (window.AromaReveal) window.AromaReveal.observe(grid);
           shown = key(url);
           if (push) history.pushState({ collection: true }, '', url);
           scrollToCollection();
