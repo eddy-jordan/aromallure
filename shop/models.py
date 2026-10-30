@@ -4,23 +4,26 @@ from django.contrib.auth.models import User
 from django.urls import reverse
 from django.db.models.signals import post_delete, post_save
 from django.dispatch import receiver
-from .sale import sale_is_live, clear_sale_cache
+from .sale import clear_sale_cache
 
 
 class Sale(models.Model):
-    """A scheduled sale (Black Friday, Christmas, ...). Products' sale prices
-    only apply while a sale is live, and the storefront banner and countdown
-    follow the same dates, so everything switches on and off together."""
+    """A scheduled sale campaign (Black Friday, Christmas, ...). It controls
+    only the storefront banner, hero, entrance tagline and countdown, which
+    switch on and off by these dates. It does not control prices: a product
+    shows its sale price whenever one is entered on the product."""
 
     name = models.CharField(
         max_length=100,
         help_text="Shown to customers, e.g. 'Black Friday' or 'Christmas Sale'."
     )
     start = models.DateTimeField(
-        help_text="Sale prices switch on at this time. Times are UTC, which is the same as Ghana time."
+        help_text="The sale banner, hero and countdown switch on at this time. "
+                  "Times are UTC, which is the same as Ghana time. This does not change prices."
     )
     end = models.DateTimeField(
-        help_text="Sale prices switch off and normal prices return automatically at this time."
+        help_text="The banner, hero and countdown switch off automatically at this time. "
+                  "This does not change prices: clear a product's sale price to end its discount."
     )
     announce_days = models.PositiveIntegerField(
         default=30,
@@ -71,9 +74,9 @@ class Product(models.Model):
     price = models.DecimalField(max_digits=8, decimal_places=2)
     sale_price = models.DecimalField(
         max_digits=8, decimal_places=2, null=True, blank=True,
-        help_text="Optional sale price. Only used while a sale is live (set up under "
-                  "Sales), then the normal price above returns automatically. "
-                  "Leave blank for no discount. Must be lower than the normal price."
+        help_text="Optional sale price. Shown (with the normal price crossed out) and "
+                  "charged for as long as it is filled in. Clear it to go back to the "
+                  "normal price. Must be lower than the normal price."
     )
     stock = models.PositiveIntegerField(default=0)
     image = models.ImageField(upload_to='products/', blank=True, null=True)
@@ -119,18 +122,16 @@ class Product(models.Model):
 
     @property
     def on_sale(self):
-        """True only while the sale window is live AND this product has a
-        valid sale price, so prices revert on their own when the window closes."""
-        return (
-            self.sale_price is not None
-            and 0 < self.sale_price < self.price
-            and sale_is_live()
-        )
+        """True whenever a valid sale price has been entered (lower than the
+        normal price). There is no time window: clearing the field is how a
+        product goes back to its normal price."""
+        return self.sale_price is not None and 0 < self.sale_price < self.price
 
     @property
     def current_price(self):
-        """The price to charge right now: the sale price during the sale,
-        otherwise the normal price. Everything that bills a customer uses this."""
+        """The price to charge right now: the sale price whenever one is
+        entered, otherwise the normal price. Everything that bills a customer
+        uses this."""
         return self.sale_price if self.on_sale else self.price
 
     @property

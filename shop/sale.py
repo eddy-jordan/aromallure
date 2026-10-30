@@ -1,13 +1,12 @@
 """
-Sale windows, the single source of truth for "is a sale on?".
+Sale campaign windows: which sale's banner, hero and countdown to show.
 
-Sales are rows in the admin-editable Sale model (name, start, end, on/off).
-This module is shared by the banner/countdown context processor and by
-Product.current_price, so the campaign look and the sale prices always
-switch on and off together, exactly at the start and end times.
+Sales are rows in the admin-editable Sale model (name, start, end, on/off) and
+drive the storefront campaign look only. They do NOT control prices: a product
+shows its sale price whenever one is entered (see Product.on_sale).
 
-The active sales are cached briefly because Product.on_sale is evaluated for
-every product on a page; the cache only holds the sale rows (not whether a
+The active sales are cached briefly so the lookup done on every request costs
+no query most of the time; the cache only holds the sale rows (not whether a
 sale is live), so start/end boundaries stay exact and admin edits show up
 within CACHE_SECONDS (immediately in the process that saved them).
 """
@@ -70,7 +69,3 @@ def get_current_sale(now=None):
 
 def sale_phase(now=None):
     return get_current_sale(now)[1]
-
-
-def sale_is_live(now=None):
-    return sale_phase(now) == 'live'
