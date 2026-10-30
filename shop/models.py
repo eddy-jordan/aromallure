@@ -2,7 +2,51 @@ from django.core.exceptions import ValidationError
 from django.db import models
 from django.contrib.auth.models import User
 from django.urls import reverse
-from .sale import sale_is_live
+from django.db.models.signals import post_delete, post_save
+from django.dispatch import receiver
+from .sale import sale_is_live, clear_sale_cache
+
+
+class Sale(models.Model):
+    """A scheduled sale (Black Friday, Christmas, ...). Products' sale prices
+    only apply while a sale is live, and the storefront banner and countdown
+    follow the same dates, so everything switches on and off together."""
+
+    name = models.CharField(
+        max_length=100,
+        help_text="Shown to customers, e.g. 'Black Friday' or 'Christmas Sale'."
+    )
+    start = models.DateTimeField(
+        help_text="Sale prices switch on at this time. Times are UTC, which is the same as Ghana time."
+    )
+    end = models.DateTimeField(
+        help_text="Sale prices switch off and normal prices return automatically at this time."
+    )
+    announce_days = models.PositiveIntegerField(
+        default=30,
+        help_text="Show the 'starts in' banner and countdown this many days before the start. "
+                  "Use 0 to show nothing until the sale begins."
+    )
+    is_active = models.BooleanField(
+        default=True,
+        help_text="Untick to switch this sale off without deleting it."
+    )
+
+    class Meta:
+        ordering = ['-start']
+
+    def __str__(self):
+        return self.name
+
+    def clean(self):
+        super().clean()
+        if self.start and self.end and self.end <= self.start:
+            raise ValidationError({'end': 'The end time must be after the start time.'})
+
+
+@receiver([post_save, post_delete], sender=Sale)
+def _clear_sale_cache(sender, **kwargs):
+    clear_sale_cache()
 
 
 class Product(models.Model):
@@ -27,8 +71,8 @@ class Product(models.Model):
     price = models.DecimalField(max_digits=8, decimal_places=2)
     sale_price = models.DecimalField(
         max_digits=8, decimal_places=2, null=True, blank=True,
-        help_text="Optional Black Friday price. Only used while the Black Friday "
-                  "sale is live, then the normal price above returns automatically. "
+        help_text="Optional sale price. Only used while a sale is live (set up under "
+                  "Sales), then the normal price above returns automatically. "
                   "Leave blank for no discount. Must be lower than the normal price."
     )
     stock = models.PositiveIntegerField(default=0)

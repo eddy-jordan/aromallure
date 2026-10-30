@@ -2,7 +2,7 @@ from django.contrib import admin
 from django.contrib.auth.models import User, Group
 from django.contrib.auth.admin import UserAdmin, GroupAdmin
 from django.utils import timezone
-from .models import Product, Order, OrderItem
+from .models import Product, Order, OrderItem, Sale
 from .admin_site import aromallure_admin
 
 
@@ -38,6 +38,23 @@ class ProductAdmin(admin.ModelAdmin):
                            'image_url', 'image', 'is_active']
 
 
+class SaleAdmin(admin.ModelAdmin):
+    list_display = ['name', 'start', 'end', 'announce_days', 'is_active', 'status']
+    list_filter  = ['is_active']
+    fields       = ['name', 'start', 'end', 'announce_days', 'is_active']
+
+    @admin.display(description='Status')
+    def status(self, obj):
+        if not obj.is_active:
+            return 'Switched off'
+        now = timezone.now()
+        if now < obj.start:
+            return 'Scheduled'
+        if now < obj.end:
+            return 'Live now'
+        return 'Ended'
+
+
 class OrderItemInline(admin.TabularInline):
     model           = OrderItem
     extra           = 0
@@ -57,6 +74,7 @@ class OrderAdmin(admin.ModelAdmin):
     actions         = [mark_as_paid]
 
 
+aromallure_admin.register(Sale, SaleAdmin)
 aromallure_admin.register(Product, ProductAdmin)
 aromallure_admin.register(Order, OrderAdmin)
 aromallure_admin.register(User, UserAdmin)

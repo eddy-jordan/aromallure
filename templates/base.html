@@ -24,15 +24,15 @@
       <img src="{% static 'shop/img/logo-full.png' %}" alt="" class="entrance-logo-img">
     </div>
     <span class="entrance-line"></span>
-    {% if black_friday %}<span class="entrance-bf">Black Friday</span>{% endif %}
+    {% if sale %}<span class="entrance-bf">{{ sale.name }}</span>{% endif %}
   </div>
   {% endif %}
 
-  {% if black_friday %}
+  {% if sale %}
   <div class="announce-strip bf-strip">
     <span class="bf-strip-label">
-      <strong>Black Friday</strong>
-      {% if black_friday.phase == 'upcoming' %}starts in{% else %}ends in{% endif %}
+      <strong>{{ sale.name }}</strong>
+      {% if sale.phase == 'upcoming' %}starts in{% else %}ends in{% endif %}
     </span>
     {% include 'shop/_bf_countdown.html' with compact=True %}
   </div>

@@ -1,7 +1,7 @@
 from django.conf import settings
 from django.utils import timezone
 from .cart import Cart
-from .sale import sale_phase
+from .sale import get_current_sale
 
 
 def store_name(request):
@@ -20,29 +20,30 @@ def cart_count(request):
     return {'cart_item_count': len(Cart(request))}
 
 
-def black_friday(request):
-    """Black Friday campaign state, driven entirely by the dates in settings.
-    'upcoming' counts down to the start, 'live' counts down to the end, and
-    outside that window black_friday is None so templates fall back to the
-    normal storefront with no manual switch-off needed.
+def sale(request):
+    """Current sale campaign state, driven entirely by the Sale rows in the
+    admin. 'upcoming' counts down to the start, 'live' counts down to the end,
+    and outside that window sale is None so templates fall back to the normal
+    storefront with no manual switch-off needed.
 
     The countdown is seeded with the seconds remaining (computed here on the
     server) rather than an absolute timestamp, so a visitor's wrong device
     clock can't make it show the wrong time."""
-    now   = timezone.now()
-    phase = sale_phase(now)
-    if phase is None:
-        return {'black_friday': None}
+    now = timezone.now()
+    current, phase = get_current_sale(now)
+    if current is None:
+        return {'sale': None}
 
-    start  = settings.BLACK_FRIDAY_START
-    target = start if phase == 'upcoming' else settings.BLACK_FRIDAY_END
+    start  = current['start']
+    target = start if phase == 'upcoming' else current['end']
 
     seconds = max(0, int((target - now).total_seconds()))
     days, rem = divmod(seconds, 86400)
     hours, rem = divmod(rem, 3600)
     minutes, secs = divmod(rem, 60)
 
-    return {'black_friday': {
+    return {'sale': {
+        'name':      current['name'],
         'phase':     phase,
         'start':     start,
         'seconds':   seconds,

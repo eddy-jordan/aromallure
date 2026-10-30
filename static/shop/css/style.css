@@ -1847,9 +1847,9 @@ input[type="number"], input[type="search"], textarea, select,
 }
 
 /* ═══════════════════════════════════════════════════════════
-   BLACK FRIDAY CAMPAIGN
-   Shown only while settings.BLACK_FRIDAY_* dates make the
-   black_friday context variable truthy. Black + gold in both
+   SALE CAMPAIGN (Black Friday and any future sale)
+   Shown only while a Sale from the admin is live or about to
+   start, i.e. the `sale` context variable is truthy. Black + gold in both
    themes on purpose: the campaign look should not flip to ivory.
    ═══════════════════════════════════════════════════════════ */
 .bf-strip,

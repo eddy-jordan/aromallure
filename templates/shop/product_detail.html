@@ -52,7 +52,7 @@
       <div class="detail-purchase">
         <span class="product-price large">
           {% include 'shop/_price.html' with product=product %}
-          {% if product.on_sale %}<span class="sale-tag">Black Friday &middot; Save {{ product.discount_percent }}%</span>{% endif %}
+          {% if product.on_sale %}<span class="sale-tag">{{ sale.name }} &middot; Save {{ product.discount_percent }}%</span>{% endif %}
         </span>
         {% if product.in_stock %}
           <form action="{% url 'add_to_cart' product.slug %}" method="post" class="add-to-cart-form">

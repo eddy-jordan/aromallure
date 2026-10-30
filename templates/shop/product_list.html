@@ -2,18 +2,18 @@
 {% block title %}{{ store_name }} — The Collection{% endblock %}
 {% block content %}
 
-{% if black_friday %}
+{% if sale %}
 <section class="hero hero--bf">
   <div class="hero-inner">
-    <span class="label-small bf-eyebrow">Black Friday &nbsp;&middot;&nbsp; {{ black_friday.start|date:"j F" }}</span>
-    {% if black_friday.phase == 'upcoming' %}
-      <h1 class="hero-title">Black Friday Is Coming</h1>
+    <span class="label-small bf-eyebrow">{{ sale.name }} &nbsp;&middot;&nbsp; {{ sale.start|date:"j F" }}</span>
+    {% if sale.phase == 'upcoming' %}
+      <h1 class="hero-title">{{ sale.name }} Is Coming</h1>
       <p class="hero-sub">Something special is on its way to the collection. Count down with us and be first in line.</p>
     {% else %}
-      <h1 class="hero-title">Black Friday Is Here</h1>
-      <p class="hero-sub">Our Black Friday celebration is on. Explore the collection and find your signature scent.</p>
+      <h1 class="hero-title">{{ sale.name }} Is Here</h1>
+      <p class="hero-sub">Our {{ sale.name }} is on. Explore the collection and find your signature scent.</p>
     {% endif %}
-    <span class="bf-hero-label">{% if black_friday.phase == 'upcoming' %}Starts in{% else %}Ends in{% endif %}</span>
+    <span class="bf-hero-label">{% if sale.phase == 'upcoming' %}Starts in{% else %}Ends in{% endif %}</span>
     {% include 'shop/_bf_countdown.html' %}
     <a href="#collection" class="btn hero-btn">Shop the Collection</a>
   </div>
