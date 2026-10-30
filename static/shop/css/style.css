@@ -1945,3 +1945,35 @@ input[type="number"], input[type="search"], textarea, select,
   .bf-countdown--compact .bf-unit { min-width: 0; }
   .bf-countdown--compact .bf-unit b { font-size: 0.75rem; min-width: 0; padding: 0.15rem 0.3rem; }
 }
+
+/* ── Black Friday sale prices ─────────────────────────── */
+.price-was {
+  color: var(--muted);
+  font-weight: 400;
+  font-size: 0.85em;
+  margin-right: 0.35rem;
+  text-decoration-thickness: 1px;
+}
+.price-now { color: var(--gold); font-weight: 600; }
+.badge.badge-sale {
+  right: auto;
+  left: 0.7rem;
+  background: #000;
+  color: #E7C45A;
+  border: 1px solid rgba(201,162,39,0.7);
+  font-weight: 600;
+}
+.sale-tag {
+  display: inline-block;
+  margin-left: 0.7rem;
+  padding: 0.2rem 0.6rem;
+  font-size: 0.68rem;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  vertical-align: middle;
+  background: #000;
+  color: #E7C45A;
+  border: 1px solid rgba(201,162,39,0.7);
+  border-radius: 20px;
+}

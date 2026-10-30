@@ -96,6 +96,9 @@
         {% if not product.in_stock %}
           <span class="badge badge-out">Sold Out</span>
         {% endif %}
+        {% if product.on_sale %}
+          <span class="badge badge-sale">-{{ product.discount_percent }}%</span>
+        {% endif %}
         <span class="badge-conc badge-conc--{{ product.concentration|lower }}">{{ product.concentration }}</span>
         {% if product.scent_notes %}
           <div class="card-scent-reveal">
@@ -108,7 +111,7 @@
         <span class="product-brand">{{ product.brand }}</span>
         <h3 class="product-name">{{ product.name }}</h3>
         <span class="product-meta">{{ product.get_concentration_display }} &middot; {{ product.volume_ml }}ml</span>
-        <span class="product-price">GH₵{{ product.price }}</span>
+        <span class="product-price">{% include 'shop/_price.html' with product=product %}</span>
       </div>
     </a>
     {% empty %}

@@ -1,0 +1,1 @@
+{% if product.on_sale %}<s class="price-was" aria-label="Original price">GH₵{{ product.price }}</s> <span class="price-now">GH₵{{ product.sale_price }}</span>{% else %}GH₵{{ product.price }}{% endif %}

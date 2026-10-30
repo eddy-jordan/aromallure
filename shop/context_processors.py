@@ -1,6 +1,7 @@
 from django.conf import settings
 from django.utils import timezone
 from .cart import Cart
+from .sale import sale_phase
 
 
 def store_name(request):
@@ -28,19 +29,13 @@ def black_friday(request):
     The countdown is seeded with the seconds remaining (computed here on the
     server) rather than an absolute timestamp, so a visitor's wrong device
     clock can't make it show the wrong time."""
-    if not getattr(settings, 'BLACK_FRIDAY_ENABLED', False):
-        return {'black_friday': None}
-
     now   = timezone.now()
-    start = settings.BLACK_FRIDAY_START
-    end   = settings.BLACK_FRIDAY_END
-
-    if now < start:
-        phase, target = 'upcoming', start
-    elif now < end:
-        phase, target = 'live', end
-    else:
+    phase = sale_phase(now)
+    if phase is None:
         return {'black_friday': None}
+
+    start  = settings.BLACK_FRIDAY_START
+    target = start if phase == 'upcoming' else settings.BLACK_FRIDAY_END
 
     seconds = max(0, int((target - now).total_seconds()))
     days, rem = divmod(seconds, 86400)

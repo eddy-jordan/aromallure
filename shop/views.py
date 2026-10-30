@@ -195,7 +195,7 @@ def checkout(request):
                         product=product,
                         product_name=product.name,
                         quantity=line['quantity'],
-                        unit_price=product.price,
+                        unit_price=product.current_price,
                     )
                     product.stock -= line['quantity']
                     product.save(update_fields=['stock'])

@@ -21,7 +21,7 @@
           <strong>{{ line.product.name }}</strong>
           <span class="product-brand">{{ line.product.brand }}</span>
         </span>
-        <span>GH₵{{ line.unit_price }}</span>
+        <span>{% if line.product.on_sale %}<s class="price-was">GH₵{{ line.product.price }}</s> {% endif %}GH₵{{ line.unit_price }}</span>
         <span>
           <form action="{% url 'cart_update' line.product.id %}" method="post" class="qty-form">
             {% csrf_token %}

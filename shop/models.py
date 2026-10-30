@@ -1,6 +1,8 @@
+from django.core.exceptions import ValidationError
 from django.db import models
 from django.contrib.auth.models import User
 from django.urls import reverse
+from .sale import sale_is_live
 
 
 class Product(models.Model):
@@ -23,6 +25,12 @@ class Product(models.Model):
     concentration = models.CharField(max_length=10, choices=CONCENTRATION_CHOICES, default='EDP')
     volume_ml = models.PositiveIntegerField(default=50, help_text="Bottle size in millilitres")
     price = models.DecimalField(max_digits=8, decimal_places=2)
+    sale_price = models.DecimalField(
+        max_digits=8, decimal_places=2, null=True, blank=True,
+        help_text="Optional Black Friday price. Only used while the Black Friday "
+                  "sale is live, then the normal price above returns automatically. "
+                  "Leave blank for no discount. Must be lower than the normal price."
+    )
     stock = models.PositiveIntegerField(default=0)
     image = models.ImageField(upload_to='products/', blank=True, null=True)
     image_url = models.URLField(
@@ -59,6 +67,33 @@ class Product(models.Model):
     @property
     def in_stock(self):
         return self.stock > 0
+
+    def clean(self):
+        super().clean()
+        if self.sale_price is not None and self.price is not None and self.sale_price >= self.price:
+            raise ValidationError({'sale_price': 'The sale price must be lower than the normal price.'})
+
+    @property
+    def on_sale(self):
+        """True only while the sale window is live AND this product has a
+        valid sale price, so prices revert on their own when the window closes."""
+        return (
+            self.sale_price is not None
+            and 0 < self.sale_price < self.price
+            and sale_is_live()
+        )
+
+    @property
+    def current_price(self):
+        """The price to charge right now: the sale price during the sale,
+        otherwise the normal price. Everything that bills a customer uses this."""
+        return self.sale_price if self.on_sale else self.price
+
+    @property
+    def discount_percent(self):
+        if not self.on_sale:
+            return 0
+        return int(round((self.price - self.sale_price) / self.price * 100))
 
 
 class Order(models.Model):

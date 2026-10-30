@@ -50,7 +50,10 @@
       <p class="detail-description">{{ product.description }}</p>
 
       <div class="detail-purchase">
-        <span class="product-price large">GH₵{{ product.price }}</span>
+        <span class="product-price large">
+          {% include 'shop/_price.html' with product=product %}
+          {% if product.on_sale %}<span class="sale-tag">Black Friday &middot; Save {{ product.discount_percent }}%</span>{% endif %}
+        </span>
         {% if product.in_stock %}
           <form action="{% url 'add_to_cart' product.slug %}" method="post" class="add-to-cart-form">
             {% csrf_token %}
@@ -90,12 +93,13 @@
             </div>
           {% endif %}
           {% if not p.in_stock %}<span class="badge badge-out">Sold Out</span>{% endif %}
+          {% if p.on_sale %}<span class="badge badge-sale">-{{ p.discount_percent }}%</span>{% endif %}
         </div>
         <div class="product-info">
           <span class="product-brand">{{ p.brand }}</span>
           <h3 class="product-name">{{ p.name }}</h3>
           <span class="product-meta">{{ p.get_concentration_display }} · {{ p.volume_ml }}ml</span>
-          <span class="product-price">GH₵{{ p.price }}</span>
+          <span class="product-price">{% include 'shop/_price.html' with product=p %}</span>
         </div>
       </a>
       {% endfor %}

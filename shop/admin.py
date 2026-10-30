@@ -28,13 +28,13 @@ mark_as_paid.short_description = '✓ Mark selected orders as Paid (manual MoMo 
 
 
 class ProductAdmin(admin.ModelAdmin):
-    list_display        = ['name', 'brand', 'price', 'stock', 'concentration', 'is_active', 'created_at']
+    list_display        = ['name', 'brand', 'price', 'sale_price', 'stock', 'concentration', 'is_active', 'created_at']
     list_filter         = ['brand', 'concentration', 'is_active']
     search_fields       = ['name', 'brand', 'scent_notes']
     prepopulated_fields = {'slug': ('name',)}
-    list_editable       = ['price', 'stock', 'is_active']
+    list_editable       = ['price', 'sale_price', 'stock', 'is_active']
     fields              = ['name', 'slug', 'brand', 'description', 'scent_notes',
-                           'concentration', 'volume_ml', 'price', 'stock',
+                           'concentration', 'volume_ml', 'price', 'sale_price', 'stock',
                            'image_url', 'image', 'is_active']
 
 

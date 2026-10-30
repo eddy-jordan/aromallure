@@ -63,7 +63,7 @@ class Cart:
             product = products_by_id.get(product_id)
             if product is None:
                 continue  # product was deleted after being added to someone's cart
-            unit_price = product.price
+            unit_price = product.current_price
             quantity = item['quantity']
             yield {
                 'product': product,
