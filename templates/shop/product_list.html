@@ -73,7 +73,10 @@
       </p>
     {% else %}
       <h2>The Collection</h2>
-      <p class="catalog-sub">{{ products.paginator.count }} fragrance{{ products.paginator.count|pluralize }} available right now.</p>
+      <p class="catalog-sub">
+        <span class="sr-only">{{ products.paginator.count }}</span><span class="count-up" data-count-to="{{ products.paginator.count }}" aria-hidden="true">{{ products.paginator.count }}</span>
+        fragrance{{ products.paginator.count|pluralize }} available right now.
+      </p>
     {% endif %}
   </div>
 
@@ -132,4 +135,37 @@
   {% endif %}
 
 </div>
+
+<script>
+  // Count the fragrance total up from 0 when it scrolls into view. The real
+  // number is already in the HTML, so without JavaScript (or with reduced
+  // motion) it simply shows the final value.
+  (function () {
+    var el = document.querySelector('.count-up');
+    if (!el || !('IntersectionObserver' in window)) return;
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    var target = parseInt(el.getAttribute('data-count-to'), 10);
+    if (isNaN(target) || target < 1) return;
+
+    el.textContent = '0';
+    var duration = 1400;
+
+    function run() {
+      var start = null;
+      function step(ts) {
+        if (start === null) start = ts;
+        var t = Math.min((ts - start) / duration, 1);
+        var eased = 1 - Math.pow(1 - t, 3);
+        el.textContent = Math.round(target * eased);
+        if (t < 1) requestAnimationFrame(step);
+      }
+      requestAnimationFrame(step);
+    }
+
+    var io = new IntersectionObserver(function (entries) {
+      if (entries[0].isIntersecting) { io.disconnect(); run(); }
+    }, { threshold: 0.6 });
+    io.observe(el);
+  })();
+</script>
 {% endblock %}
