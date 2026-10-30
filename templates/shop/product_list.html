@@ -3,7 +3,7 @@
 {% block content %}
 
 {% if sale %}
-<section class="hero hero--bf">
+<section class="hero hero--bf{% if not is_home %} hero--instant{% endif %}">
   <div class="hero-inner">
     <span class="label-small bf-eyebrow">{{ sale.name }} &nbsp;&middot;&nbsp; {{ sale.start|date:"j F" }}</span>
     {% if sale.phase == 'upcoming' %}
@@ -19,7 +19,7 @@
   </div>
 </section>
 {% else %}
-<section class="hero">
+<section class="hero{% if not is_home %} hero--instant{% endif %}">
   <div class="hero-inner">
     <span class="label-small">Est. 2022 &nbsp;&middot;&nbsp; Kwabenya, Accra</span>
     <h1 class="hero-title">Fragrance, Bottled Deliberately</h1>
@@ -125,11 +125,11 @@
   {% if products.has_other_pages %}
   <div class="pagination">
     {% if products.has_previous %}
-      <a href="?page={{ products.previous_page_number }}" class="page-btn">&larr; Previous</a>
+      <a href="?{% if query %}q={{ query|urlencode }}&amp;{% endif %}page={{ products.previous_page_number }}#collection" class="page-btn">&larr; Previous</a>
     {% endif %}
     <span class="page-info">Page {{ products.number }} of {{ products.paginator.num_pages }}</span>
     {% if products.has_next %}
-      <a href="?page={{ products.next_page_number }}" class="page-btn">Next &rarr;</a>
+      <a href="?{% if query %}q={{ query|urlencode }}&amp;{% endif %}page={{ products.next_page_number }}#collection" class="page-btn">Next &rarr;</a>
     {% endif %}
   </div>
   {% endif %}
@@ -166,6 +166,62 @@
       if (entries[0].isIntersecting) { io.disconnect(); run(); }
     }, { threshold: 0.6 });
     io.observe(el);
+  })();
+
+  // Page through the collection without reloading: swap the grid and the
+  // pager in place, update the address bar, and scroll to the top of the
+  // collection. If anything goes wrong it falls back to a normal page load,
+  // and without JavaScript the plain links still work.
+  (function () {
+    var grid = document.querySelector('.product-grid');
+    var pager = document.querySelector('.pagination');
+    var anchor = document.getElementById('collection');
+    if (!grid || !pager || !anchor || !window.fetch || !window.DOMParser) return;
+
+    function key(url) {
+      var u = new URL(url, window.location.href);
+      return u.pathname + u.search;
+    }
+    var shown = key(window.location.href);
+
+    function scrollToCollection() {
+      var nav = document.querySelector('.sticky-nav');
+      var top = anchor.getBoundingClientRect().top + window.pageYOffset - (nav ? nav.offsetHeight : 0) - 12;
+      var reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      window.scrollTo({ top: Math.max(0, top), behavior: reduce ? 'auto' : 'smooth' });
+    }
+
+    function load(url, push) {
+      grid.style.opacity = '0.45';
+      fetch(url, { credentials: 'same-origin' })
+        .then(function (r) { if (!r.ok) throw new Error('bad status'); return r.text(); })
+        .then(function (html) {
+          var doc = new DOMParser().parseFromString(html, 'text/html');
+          var newGrid = doc.querySelector('.product-grid');
+          var newPager = doc.querySelector('.pagination');
+          if (!newGrid || !newPager) throw new Error('unexpected page');
+          grid.innerHTML = newGrid.innerHTML;
+          pager.innerHTML = newPager.innerHTML;
+          grid.style.opacity = '';
+          shown = key(url);
+          if (push) history.pushState({ collection: true }, '', url);
+          scrollToCollection();
+        })
+        .catch(function () { window.location.href = url; });
+    }
+
+    document.addEventListener('click', function (e) {
+      var link = e.target.closest ? e.target.closest('.pagination a.page-btn') : null;
+      if (!link || e.defaultPrevented || e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
+      e.preventDefault();
+      load(link.href, true);
+    });
+
+    // Browser back/forward between pages. Ignore hash-only changes (e.g. the
+    // "Shop the Collection" button), which also fire popstate.
+    window.addEventListener('popstate', function () {
+      if (key(window.location.href) !== shown) load(window.location.href, false);
+    });
   })();
 </script>
 {% endblock %}

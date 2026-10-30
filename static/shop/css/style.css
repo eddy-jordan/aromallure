@@ -1991,3 +1991,10 @@ input[type="number"], input[type="search"], textarea, select,
   white-space: nowrap;
   border: 0;
 }
+
+/* ── Paging through the collection ────────────────────── */
+/* No-JavaScript page links jump to #collection; keep its heading clear of the sticky navbar. */
+#collection { scroll-margin-top: 7rem; }
+.product-grid { transition: opacity 0.2s ease; }
+/* Not the homepage entrance (search / page 2+): show the hero immediately, no delayed fade. */
+.hero.hero--instant { animation: none; }

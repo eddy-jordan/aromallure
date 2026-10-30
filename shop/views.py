@@ -51,7 +51,9 @@ def product_list_view(request):
 
     return render(request, 'shop/product_list.html', {
         'products': products,
-        'is_home':  not query,  # only show entrance animation when not searching
+        # Entrance animation only on a true first visit, not when searching
+        # or paging through the collection.
+        'is_home':  not query and 'page' not in request.GET,
         'query':    query,
     })
 
