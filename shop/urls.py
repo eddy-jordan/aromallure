@@ -13,7 +13,6 @@ urlpatterns = [
 
     path('checkout/', views.checkout, name='checkout'),
     path('payment/<int:order_id>/', views.payment_initiate, name='payment_initiate'),
-    path('payment/<int:order_id>/simulate/', views.payment_simulate, name='payment_simulate'),
     path('payment/callback/', views.payment_callback, name='payment_callback'),
     path('payment/webhook/', views.paystack_webhook, name='paystack_webhook'),
 

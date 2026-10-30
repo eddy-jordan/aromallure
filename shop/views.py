@@ -220,9 +220,10 @@ def checkout(request):
 
 @login_required
 def payment_initiate(request, order_id):
-    """Shows the payment page with Paystack's inline popup.
-    In test/simulation mode (no PAYSTACK_PUBLIC_KEY set), shows a
-    simulated payment button so the full flow can be tested locally."""
+    """Shows the payment page: Paystack's inline popup when PAYSTACK_PUBLIC_KEY
+    is set, otherwise the manual MoMo instructions. Orders are only ever marked
+    Paid by a verified Paystack webhook or by the store owner in the admin
+    ("Mark as Paid"), never by a customer-reachable URL."""
     import os
     order = get_object_or_404(Order, id=order_id, user=request.user)
 
@@ -240,39 +241,11 @@ def payment_initiate(request, order_id):
         'paystack_public_key': paystack_public_key,
         'amount_pesewas': amount_pesewas,
         'user_email': request.user.email,
-        'simulation_mode': not paystack_public_key,
         'momo_number':  django_settings.MOMO_NUMBER,
         'momo_name':    django_settings.MOMO_NAME,
         'momo_network': django_settings.MOMO_NETWORK,
     }
     return render(request, 'shop/payment.html', context)
-
-
-@login_required
-def payment_simulate(request, order_id):
-    """Simulates a successful payment locally — only active when
-    PAYSTACK_PUBLIC_KEY is not set. Allows full flow testing before
-    the Paystack account is ready."""
-    import os
-    if os.environ.get('PAYSTACK_PUBLIC_KEY'):
-        # Real keys are set — simulation shouldn't be accessible
-        return redirect('payment_initiate', order_id=order_id)
-
-    order = get_object_or_404(Order, id=order_id, user=request.user)
-    order.status = 'PAID'
-    order.payment_reference = f'SIMULATED-{order.id}'
-    order.save(update_fields=['status', 'payment_reference'])
-
-    cart = Cart(request)
-    cart.clear()
-
-    try:
-        send_order_confirmation_email(order)
-    except Exception:
-        pass
-
-    messages.success(request, f"[TEST MODE] Payment simulated for Order #{order.id}.")
-    return redirect('order_confirmation', order_id=order.id)
 
 
 import json
