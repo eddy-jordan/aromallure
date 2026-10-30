@@ -2114,3 +2114,30 @@ input[type="number"], input[type="search"], textarea, select,
   .cart-link--wiggle svg { transform-origin: 50% 80%; animation: cart-wiggle 0.6s ease; }
   .theme-toggle.is-spinning { animation: theme-spin 0.55s cubic-bezier(0.4, 0, 0.2, 1); }
 }
+
+/* ═══════════════════════════════════════════════════════════
+   HOVER UNDERLINE + FOCUS OUTLINES (final word)
+   ═══════════════════════════════════════════════════════════ */
+
+/* The logo, icons and button-like links never underline on hover. The global
+   a:hover underline was drawn in the link's own colour (dark brown in the light
+   theme) under gold text, and phones keep the hover state after a tap. Plain
+   text links elsewhere keep their hover underline. */
+.brand:hover, .cart-link:hover, .social-link:hover, .whatsapp-btn:hover,
+[class*="btn"]:hover { text-decoration: none; }
+.brand { transition: opacity 0.2s ease; }
+@media (hover: hover) { .brand:hover { opacity: 0.8; } }
+
+/* Text fields show focus by highlighting their own border, so a mouse click or
+   tap must not also draw an outline on top. Keyboard users still get an
+   unmistakable ring on every link and button (a/button:focus-visible above),
+   now including the logo. */
+input:focus-visible, textarea:focus-visible, select:focus-visible { outline: none !important; }
+/* The ring must also win over the older [class*="btn"]:focus { outline: none }
+   rule, which otherwise hid it on every button-styled element. :focus-visible
+   only matches for keyboard use, so mouse clicks and taps never show it. */
+a:focus-visible, button:focus-visible, [class*="btn"]:focus-visible, .brand:focus-visible {
+  outline: 2px solid var(--gold) !important;
+  outline-offset: 3px;
+}
+.brand:focus-visible { outline-offset: 4px; border-radius: 8px; }
