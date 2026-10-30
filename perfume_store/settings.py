@@ -256,7 +256,7 @@ SITE_NAME = 'Aromallure'
 # Before BLACK_FRIDAY_START the site shows a "starts in" countdown; between
 # START and END it shows "ends in"; after END everything disappears on its own.
 # Times are UTC, which is the same as Ghana local time. Override with ISO
-# strings in the environment, e.g. BLACK_FRIDAY_END=2026-11-22T23:59:59+00:00.
+# strings in the environment, e.g. BLACK_FRIDAY_END=2026-12-01T00:00:00+00:00.
 # Set BLACK_FRIDAY_ENABLED=False to switch the whole thing off.
 from datetime import datetime, timezone as _dt_timezone
 
@@ -271,9 +271,10 @@ def _env_datetime(name, default):
 
 BLACK_FRIDAY_ENABLED = os.environ.get('BLACK_FRIDAY_ENABLED', 'True') == 'True'
 BLACK_FRIDAY_START = _env_datetime(
-    'BLACK_FRIDAY_START', datetime(2026, 11, 20, 0, 0, 0, tzinfo=_dt_timezone.utc))
+    'BLACK_FRIDAY_START', datetime(2026, 11, 28, 0, 0, 0, tzinfo=_dt_timezone.utc))
+# 48 hours after the start: the sale runs all of 28 and 29 November.
 BLACK_FRIDAY_END = _env_datetime(
-    'BLACK_FRIDAY_END', datetime(2026, 11, 20, 23, 59, 59, tzinfo=_dt_timezone.utc))
+    'BLACK_FRIDAY_END', datetime(2026, 11, 30, 0, 0, 0, tzinfo=_dt_timezone.utc))
 
 # ── Manual MoMo payment details ─────────────────────────────────────────────
 MOMO_NUMBER      = os.environ.get('MOMO_NUMBER', '0505519010')
