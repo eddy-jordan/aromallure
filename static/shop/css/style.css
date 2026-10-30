@@ -935,6 +935,9 @@ input[type="number"], input[type="tel"] {
   transition: background 0.2s, transform 0.15s;
   border-radius: 2px;
   margin-left: 2.3rem;
+  /* .btn sets width:100%; with the indent above that overflowed the panel by
+     exactly the indent. auto lets the flex column stretch it to fit instead. */
+  width: auto;
 }
 .whatsapp-confirm-btn:hover { background: #20b958; transform: translateY(-1px); }
 
