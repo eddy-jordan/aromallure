@@ -65,6 +65,25 @@
         {% endif %}
       </div>
 
+      <div class="share-row" data-share
+           data-share-url="{{ share.url }}"
+           data-share-title="{{ share.title }}"
+           data-share-text="{{ share.text }}">
+        <span class="label-small">Share this fragrance</span>
+        <div class="share-actions">
+          {# Shown only where the browser has a native share sheet (most phones). #}
+          <button type="button" class="share-action share-native" hidden>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.6" y1="13.5" x2="15.4" y2="17.5"/><line x1="15.4" y1="6.5" x2="8.6" y2="10.5"/></svg>
+            <span>Share</span>
+          </button>
+          <button type="button" class="share-action share-copy">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 13a5 5 0 007.07 0l3-3a5 5 0 00-7.07-7.07l-1.5 1.5"/><path d="M14 11a5 5 0 00-7.07 0l-3 3a5 5 0 007.07 7.07l1.5-1.5"/></svg>
+            <span>Copy link</span>
+          </button>
+        </div>
+        <span class="sr-only share-status" role="status" aria-live="polite"></span>
+      </div>
+
       <div class="detail-assurance">
         <span>🌍 Worldwide Delivery</span>
         <span>✦ Premium Quality</span>
@@ -108,4 +127,58 @@
   {% endif %}
 
 </div>
+
+<script id="share-script">
+  // Share this perfume. "Share" opens the device's own share sheet (WhatsApp,
+  // Instagram, Telegram, Messages ...) where the browser has one; "Copy link"
+  // works everywhere, for pasting into an Instagram message, a bio, a text.
+  (function () {
+    var row = document.querySelector('[data-share]');
+    if (!row) return;
+    var data = { url: row.dataset.shareUrl, title: row.dataset.shareTitle, text: row.dataset.shareText };
+    var nativeBtn = row.querySelector('.share-native');
+    var copyBtn = row.querySelector('.share-copy');
+    var status = row.querySelector('.share-status');
+
+    function say(button, message) {
+      var label = button.querySelector('span');
+      var original = label.getAttribute('data-original') || label.textContent;
+      label.setAttribute('data-original', original);
+      label.textContent = message;
+      status.textContent = message;
+      clearTimeout(button.__t);
+      button.__t = setTimeout(function () { label.textContent = original; status.textContent = ''; }, 2200);
+    }
+
+    function copyText(text) {
+      if (navigator.clipboard && window.isSecureContext) return navigator.clipboard.writeText(text);
+      return new Promise(function (resolve, reject) {   // older browsers / plain http
+        var box = document.createElement('textarea');
+        box.value = text;
+        box.setAttribute('readonly', '');
+        box.style.cssText = 'position:fixed;top:0;left:0;opacity:0';
+        document.body.appendChild(box);
+        box.select();
+        var done = false;
+        try { done = document.execCommand('copy'); } catch (e) {}
+        document.body.removeChild(box);
+        done ? resolve() : reject(new Error('copy failed'));
+      });
+    }
+
+    if (nativeBtn && navigator.share && (!navigator.canShare || navigator.canShare({ url: data.url }))) {
+      nativeBtn.hidden = false;
+      nativeBtn.addEventListener('click', function () {
+        // Cancelling the sheet rejects the promise; that is not an error.
+        navigator.share(data).catch(function () {});
+      });
+    }
+    copyBtn.addEventListener('click', function () {
+      copyText(data.url).then(
+        function () { say(copyBtn, 'Link copied'); },
+        function () { say(copyBtn, 'Press and hold to copy'); }
+      );
+    });
+  })();
+</script>
 {% endblock %}

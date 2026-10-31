@@ -91,6 +91,7 @@ TEMPLATES = [
                 'django.contrib.messages.context_processors.messages',
                 'shop.context_processors.store_name',
                 'shop.context_processors.cart_count',
+                'shop.context_processors.share_defaults',
                 'shop.context_processors.sale',
             ],
         },
@@ -251,6 +252,11 @@ LOGIN_URL = 'login'
 
 # Store branding — change this one line to rename the store everywhere
 SITE_NAME = 'Aromallure'
+
+# Link previews: resize Cloudinary photos to 1200x630 for WhatsApp/Instagram/etc.
+# cards (see shop/sharing.py). Set SHARE_PREVIEW_RESIZE=False to use the original
+# photo URL instead.
+SHARE_PREVIEW_RESIZE = os.environ.get('SHARE_PREVIEW_RESIZE', 'True') == 'True'
 
 # Sales (name, start, end, on/off) are managed in the admin under "Sales";
 # see shop/sale.py. Nothing to configure here.

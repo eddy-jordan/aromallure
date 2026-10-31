@@ -2272,3 +2272,30 @@ button.filter-apply { width: auto; height: 2.4rem; margin: 0; padding: 0 1.3rem;
 @media (max-width: 640px) {
   .load-more { width: 100%; }
 }
+
+/* ── Share this fragrance ─────────────────────────────── */
+.share-row { margin-top: 1.4rem; }
+.share-row .label-small { display: block; margin-bottom: 0.6rem; }
+.share-actions { display: flex; flex-wrap: wrap; gap: 0.6rem; }
+/* button.… beats the site-wide `button` and `button:hover` rules (full-width gold). */
+button.share-action {
+  all: unset;
+  box-sizing: border-box;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.55rem 1.1rem;
+  border: 1px solid var(--gold-soft);
+  border-radius: 999px !important;
+  color: var(--cream);
+  font-family: 'Jost', sans-serif;
+  font-size: 0.82rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: border-color 0.2s, color 0.2s, background 0.2s, transform 0.15s;
+}
+button.share-action svg { width: 16px; height: 16px; flex: none; }
+button.share-action:hover { background: none; border-color: var(--gold); color: var(--gold); }
+button.share-action:active { transform: scale(0.97); }
+button.share-action[hidden] { display: none; }

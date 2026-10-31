@@ -2,6 +2,7 @@ from django.conf import settings
 from django.utils import timezone
 from .cart import Cart
 from .sale import get_current_sale
+from .sharing import default_image
 
 
 def store_name(request):
@@ -12,6 +13,12 @@ def store_name(request):
     would silently override ours on those specific pages otherwise.
     Change the store's name in one place: settings.SITE_NAME."""
     return {'store_name': getattr(settings, 'SITE_NAME', 'My Store')}
+
+
+def share_defaults(request):
+    """Fallback picture for link previews (see shop/sharing.py) on pages that
+    don't supply their own."""
+    return {'share_default_image': default_image(request)}
 
 
 def cart_count(request):

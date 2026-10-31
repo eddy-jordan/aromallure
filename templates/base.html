@@ -5,6 +5,24 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>{% block title %}{{ store_name }}{% endblock %}</title>
+  {# Link previews (WhatsApp, Instagram, Facebook, Telegram, X ...). Pages that know better pass a `share` dict; see shop/sharing.py. #}
+  {% with desc=share.description|default:"Aromallure, elegance in a bottle. Premium fragrances from Kwabenya, Accra, delivered worldwide." %}
+  <meta name="description" content="{{ desc }}">
+  {% if share.url %}<link rel="canonical" href="{{ share.url }}">{% endif %}
+  <meta property="og:site_name" content="{{ store_name }}">
+  <meta property="og:type" content="{{ share.type|default:'website' }}">
+  <meta property="og:title" content="{{ share.title|default:store_name }}">
+  <meta property="og:description" content="{{ desc }}">
+  <meta property="og:url" content="{{ share.url|default:'' }}{% if not share.url %}{{ request.scheme }}://{{ request.get_host }}{{ request.path }}{% endif %}">
+  <meta property="og:image" content="{{ share.image|default:share_default_image }}">
+  {% if share.image_alt %}<meta property="og:image:alt" content="{{ share.image_alt }}">{% endif %}
+  {% if share.price %}<meta property="product:price:amount" content="{{ share.price }}">
+  <meta property="product:price:currency" content="{{ share.currency }}">{% endif %}
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="{{ share.title|default:store_name }}">
+  <meta name="twitter:description" content="{{ desc }}">
+  <meta name="twitter:image" content="{{ share.image|default:share_default_image }}">
+  {% endwith %}
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;600;700&family=Jost:wght@400;500;600&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="{% static 'shop/css/style.css' %}">

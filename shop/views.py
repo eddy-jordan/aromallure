@@ -7,6 +7,7 @@ from django.db import transaction
 from django.http import Http404
 from .brands import brand_groups
 from .catalog import CATALOG_PARAMS, catalog_context
+from .sharing import brand_share, product_share
 from .forms import SignUpForm, CheckoutForm
 from .models import Product, Order, OrderItem
 from .cart import Cart
@@ -79,6 +80,7 @@ def brand_view(request, slug):
         'query':    '',
         'brands':   strip,
         'current_brand': current,
+        'share':    brand_share(request, current, context['total']),
     })
     return render(request, 'shop/product_list.html', context)
 
@@ -98,6 +100,7 @@ def product_detail_view(request, slug):
     return render(request, 'shop/product_detail.html', {
         'product': product,
         'related': related,
+        'share':   product_share(request, product),
     })
 
 
