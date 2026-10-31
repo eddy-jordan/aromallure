@@ -39,3 +39,53 @@ def send_order_confirmation_email(order):
         "text":    text_body,
         "html":    html_body,
     })
+
+
+def _send(to, subject, text_body, html_body=None):
+    """Send through Resend. Returns False (and sends nothing) when no API key is
+    configured, which is the normal state on a developer's machine."""
+    api_key = os.environ.get('RESEND_API_KEY', '')
+    if not api_key:
+        print(f"[EMAIL] No RESEND_API_KEY set — skipping email '{subject}'")
+        return False
+
+    resend.api_key = api_key
+    payload = {
+        "from":    getattr(settings, 'DEFAULT_FROM_EMAIL', f'{settings.SITE_NAME} <hello@aromallure.store>'),
+        "to":      [to],
+        "subject": subject,
+        "text":    text_body,
+    }
+    if html_body:
+        payload["html"] = html_body
+    resend.Emails.send(payload)
+    return True
+
+
+def send_order_shipped_email(order):
+    """Tell the customer their order is on its way."""
+    if not order.user.email:
+        return False
+    context = {'order': order, 'store_name': settings.SITE_NAME}
+    return _send(
+        order.user.email,
+        f"Your {settings.SITE_NAME} order #{order.id} is on its way",
+        render_to_string('shop/email/order_shipped_email.txt', context),
+        render_to_string('shop/email/order_shipped_email.html', context),
+    )
+
+
+def send_owner_new_order_email(order, to, admin_url, whatsapp_url=''):
+    """Tell the store owner a new order has just been placed."""
+    context = {
+        'order': order,
+        'store_name': settings.SITE_NAME,
+        'admin_url': admin_url,
+        'whatsapp_url': whatsapp_url,
+        'hold_hours': getattr(settings, 'UNPAID_ORDER_HOURS', 0),
+    }
+    return _send(
+        to,
+        f"New order #{order.id}, GH₵{order.total_price}, waiting for payment",
+        render_to_string('shop/email/owner_new_order_email.txt', context),
+    )

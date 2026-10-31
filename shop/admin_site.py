@@ -13,8 +13,11 @@ class AromallureAdminSite(AdminSite):
 
     def index(self, request, extra_context=None):
         from shop.models import Order, Product
+        from shop.orders import sweep_expired_orders
         from django.contrib.auth.models import User
         from django.db.models import Sum
+
+        sweep_expired_orders()
 
         today = timezone.now().date()
         week_ago = timezone.now() - timezone.timedelta(days=7)

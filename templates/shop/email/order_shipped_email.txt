@@ -1,0 +1,22 @@
+{% autoescape off %}{{ store_name }} — Your order is on its way
+========================================
+
+Good news, {{ order.full_name }}! Your order #{{ order.id }} has been shipped.
+
+ITEMS
+-----
+{% for item in order.items.all %}{{ item.quantity }} x {{ item.product_name }} — GH₵{{ item.subtotal }}
+{% endfor %}
+TOTAL: GH₵{{ order.total_price }}
+
+DELIVERING TO
+-------------
+{{ order.full_name }}
+{{ order.shipping_address }}
+{{ order.phone_number }}
+
+We may call or message you on {{ order.phone_number }} to arrange delivery,
+so please keep your phone close.
+
+Thank you for shopping with {{ store_name }}.
+{% endautoescape %}
