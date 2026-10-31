@@ -2191,7 +2191,9 @@ a:focus-visible, button:focus-visible, [class*="btn"]:focus-visible, .brand:focu
   color: var(--gold);
 }
 .brand-strip-toggle[hidden] { display: none; }
-.brand-strip-toggle:hover { text-decoration: underline; }
+/* button.…:hover outranks the site-wide `button:hover { background: gold }`,
+   which otherwise turned this text link into gold text on a gold pill. */
+button.brand-strip-toggle:hover { background: none; color: var(--cream); text-decoration: underline; }
 @media (max-width: 640px) {
   .brand-chip { padding: 0.38rem 0.75rem; font-size: 0.76rem; }
 }
