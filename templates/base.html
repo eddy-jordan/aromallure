@@ -39,6 +39,13 @@
           document.documentElement.classList.add('js-reveal');
         }
       } catch (e) {}
+      // The curtain entrance plays once per visit: later homepage views in the
+      // same tab skip it (see the entrance script at the end of the page).
+      try {
+        if (sessionStorage.getItem('aroma-entrance') === '1') {
+          document.documentElement.classList.add('entrance-seen');
+        }
+      } catch (e) {}
     })();
   </script>
 </head>
@@ -46,6 +53,8 @@
 
   {% if is_home %}
   <div id="entrance-overlay" class="entrance-overlay" aria-hidden="true">
+    <span class="curtain curtain--left"></span>
+    <span class="curtain curtain--right"></span>
     <div class="splash-logo-wrap">
       <img src="{% static 'shop/img/logo-full.png' %}" alt="" class="entrance-logo-img">
     </div>
@@ -277,16 +286,34 @@
       }
     })();
 
-    // ── Entrance overlay cleanup ──────────────────────────────
+    // ── Curtain entrance: once per visit, skippable ───────────
+    // The animation itself is pure CSS and ends hidden on its own; this only
+    // remembers that it has played, lets a tap/click/Escape skip it, and
+    // removes the element afterwards.
     (function () {
       var overlay = document.getElementById('entrance-overlay');
       if (!overlay) return;
+      var root = document.documentElement;
       var prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-      if (prefersReduced) { overlay.remove(); return; }
+      if (prefersReduced || root.classList.contains('entrance-seen')) { overlay.remove(); return; }
+      try { sessionStorage.setItem('aroma-entrance', '1'); } catch (e) {}
+
+      function remove() { if (overlay.parentNode) overlay.remove(); }
+      var skipped = false;
+      function skip() {
+        if (skipped) return;
+        skipped = true;
+        overlay.classList.add('is-skipped');
+        root.classList.add('entrance-skipped');
+        setTimeout(remove, 900);
+      }
+      overlay.addEventListener('click', skip);
+      overlay.addEventListener('touchstart', skip, { passive: true });
+      document.addEventListener('keydown', function (e) { if (e.key === 'Escape') skip(); });
       overlay.addEventListener('animationend', function (e) {
-        if (e.animationName === 'splash-overlay-out') overlay.remove();
+        if (e.target === overlay && e.animationName === 'entrance-done') remove();
       });
-      setTimeout(function () { if (overlay && overlay.parentNode) overlay.remove(); }, 2600);
+      setTimeout(remove, 3800); // safety net
     })();
 
     // ── Black Friday countdown ────────────────────────────────
