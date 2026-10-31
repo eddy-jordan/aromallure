@@ -7,7 +7,6 @@ from django.db import transaction
 from django.http import Http404
 from .brands import brand_groups
 from .catalog import CATALOG_PARAMS, catalog_context
-from .orders import notify_owner_of_new_order, sweep_expired_orders
 from .sharing import brand_share, product_share
 from .forms import SignUpForm, CheckoutForm
 from .models import Product, Order, OrderItem
@@ -38,7 +37,6 @@ def product_list_view(request):
     """Product catalog with search, sorting, filters and numbered pages."""
     from django.db.models import Q
 
-    sweep_expired_orders()   # release stock held by long-unpaid orders
     query    = request.GET.get('q', '').strip()
     products_qs = Product.objects.filter(is_active=True)
 
@@ -90,7 +88,6 @@ def brand_view(request, slug):
 def product_detail_view(request, slug):
     """A single perfume's full detail page. 404s for inactive/missing products
     rather than leaking that a hidden product's slug exists."""
-    sweep_expired_orders()
     product = get_object_or_404(Product, slug=slug, is_active=True)
     # Related: other active products from the same brand, or if none,
     # any other active products — capped at 3 so the grid stays clean
@@ -115,7 +112,6 @@ def product_detail_view(request, slug):
 def add_to_cart(request, slug):
     """Anyone can add to cart, even anonymous visitors — the cart lives in
     their session. Login is only required later, at checkout."""
-    sweep_expired_orders()
     product = get_object_or_404(Product, slug=slug, is_active=True)
     cart = Cart(request)
 
@@ -173,7 +169,6 @@ def cart_remove(request, product_id):
 
 @login_required
 def checkout(request):
-    sweep_expired_orders()
     cart = Cart(request)
 
     if cart.is_empty():
@@ -243,9 +238,6 @@ def checkout(request):
             # wait for a webhook to clear it.
             cart.clear()
 
-            # Tell the owner right away; never lets a failed email break checkout.
-            notify_owner_of_new_order(request, order)
-
             return redirect('payment_initiate', order_id=order.id)
     else:
         initial = {'full_name': request.user.get_full_name() or request.user.username}
@@ -280,7 +272,6 @@ def payment_initiate(request, order_id):
         'momo_number':  django_settings.MOMO_NUMBER,
         'momo_name':    django_settings.MOMO_NAME,
         'momo_network': django_settings.MOMO_NETWORK,
-        'hold_hours':   django_settings.UNPAID_ORDER_HOURS,
     }
     return render(request, 'shop/payment.html', context)
 

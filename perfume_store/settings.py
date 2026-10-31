@@ -258,18 +258,6 @@ SITE_NAME = 'Aromallure'
 # photo URL instead.
 SHARE_PREVIEW_RESIZE = os.environ.get('SHARE_PREVIEW_RESIZE', 'True') == 'True'
 
-# ── Orders ───────────────────────────────────────────────────────────────────
-# Stock is taken when an order is placed, so an unpaid order holds perfumes.
-# Pending orders older than this many hours are cancelled automatically and
-# their stock returned (0 turns it off). See shop/orders.py.
-try:
-    UNPAID_ORDER_HOURS = int(os.environ.get('UNPAID_ORDER_HOURS', '24'))
-except ValueError:
-    UNPAID_ORDER_HOURS = 24
-# Where the "new order" alert goes. Leave it empty (OWNER_ORDER_EMAIL=) to switch
-# the alert off.
-OWNER_ORDER_EMAIL = os.environ.get('OWNER_ORDER_EMAIL', 'aromalluregh@gmail.com')
-
 # Sales (name, start, end, on/off) are managed in the admin under "Sales";
 # see shop/sale.py. Nothing to configure here.
 
