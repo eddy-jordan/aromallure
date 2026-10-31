@@ -13,14 +13,6 @@
       {% for value, label in type_options %}<option value="{{ value }}"{% if f.type == value %} selected{% endif %}>{{ label }}</option>{% endfor %}
     </select>
   </div>
-  <div class="filter-field filter-price">
-    <label for="filter-min">Price (GH₵)</label>
-    <div class="filter-price-inputs">
-      <input id="filter-min" type="number" name="min_price" value="{{ f.min_price }}" placeholder="Min" min="0" step="any" inputmode="decimal" aria-label="Minimum price in cedis">
-      <span aria-hidden="true">to</span>
-      <input id="filter-max" type="number" name="max_price" value="{{ f.max_price }}" placeholder="Max" min="0" step="any" inputmode="decimal" aria-label="Maximum price in cedis">
-    </div>
-  </div>
   <button type="submit" class="filter-apply">Apply</button>
 </form>
 <div class="filter-summary">{% if custom_view %}<a href="{{ clear_url }}" class="filter-clear">Clear filters &times;</a>{% endif %}</div>

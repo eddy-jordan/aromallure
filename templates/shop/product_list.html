@@ -70,23 +70,23 @@
     {% if query %}
       <h2>Search Results for "{{ query }}"</h2>
       <p class="catalog-sub">
-        {{ products.paginator.count }} fragrance{{ products.paginator.count|pluralize }} found.
+        {{ total }} fragrance{{ total|pluralize }} found.
         <a href="{% url 'product_list' %}" style="margin-left:0.8rem; font-size:0.82rem;">Clear search &times;</a>
       </p>
     {% elif current_brand %}
       <h2>{{ current_brand.name }}</h2>
       <p class="catalog-sub">
-        {{ products.paginator.count }} fragrance{{ products.paginator.count|pluralize }} from {{ current_brand.name }}{% if filtering %} match your filters{% endif %}.
+        {{ total }} fragrance{{ total|pluralize }} from {{ current_brand.name }}{% if filtering %} match your filters{% endif %}.
         <a href="{% url 'product_list' %}#collection" style="margin-left:0.8rem; font-size:0.82rem; white-space:nowrap;">All fragrances &rarr;</a>
       </p>
     {% elif filtering %}
       <h2>The Collection</h2>
-      <p class="catalog-sub">{{ products.paginator.count }} fragrance{{ products.paginator.count|pluralize }} match{{ products.paginator.count|pluralize:"es," }} your filters.</p>
+      <p class="catalog-sub">{{ total }} fragrance{{ total|pluralize }} match{{ total|pluralize:"es," }} your filters.</p>
     {% else %}
       <h2>The Collection</h2>
       <p class="catalog-sub">
-        <span class="sr-only">{{ products.paginator.count }}</span><span class="count-up" data-count-to="{{ products.paginator.count }}" aria-hidden="true">{{ products.paginator.count }}</span>
-        fragrance{{ products.paginator.count|pluralize }} available right now.
+        <span class="sr-only">{{ total }}</span><span class="count-up" data-count-to="{{ total }}" aria-hidden="true">{{ total }}</span>
+        fragrance{{ total|pluralize }} available right now.
       </p>
     {% endif %}
   </div>
@@ -143,8 +143,8 @@
     {% endfor %}
   </div>
 
-  {# Always rendered (empty when there is a single page) so the in-place page swap always has it to fill. #}
-  <nav class="pagination" aria-label="Pages">{% if products.has_other_pages %}{% if products.has_previous %}<a href="?{{ qs_prefix }}page={{ products.previous_page_number }}#collection" class="page-btn page-step" rel="prev" aria-label="Previous page"><span aria-hidden="true">&larr;</span><span class="page-step-label"> Previous</span></a>{% endif %}<div class="page-numbers">{% for p in page_range %}{% if p.gap %}<span class="page-gap" aria-hidden="true">&hellip;</span>{% elif p.current %}<span class="page-btn page-num is-current" aria-current="page" aria-label="Page {{ p.num }}, current page">{{ p.num }}</span>{% else %}<a href="?{{ qs_prefix }}page={{ p.num }}#collection" class="page-btn page-num" aria-label="Page {{ p.num }}">{{ p.num }}</a>{% endif %}{% endfor %}</div>{% if products.has_next %}<a href="?{{ qs_prefix }}page={{ products.next_page_number }}#collection" class="page-btn page-step" rel="next" aria-label="Next page"><span class="page-step-label">Next </span><span aria-hidden="true">&rarr;</span></a>{% endif %}{% endif %}</nav>
+  {# Always rendered (empty for a single page) so the in-place swap always has something to fill. #}
+  <div class="load-more-area" aria-live="polite">{% if show_more_area %}<p class="load-more-count">Showing {{ shown_count }} of {{ total }}</p><span class="load-more-bar" aria-hidden="true"><i style="width: {{ progress }}%"></i></span>{% if has_more %}<a href="?{{ qs_prefix }}page={{ next_page }}#collection" class="load-more" rel="next">Show more</a>{% endif %}{% endif %}</div>
 
 </div>
 
@@ -180,15 +180,16 @@
     io.observe(el);
   })();
 
-  // Page through the collection without reloading: swap the grid and the
-  // pager in place, update the address bar, and scroll to the top of the
-  // collection. If anything goes wrong it falls back to a normal page load,
-  // and without JavaScript the plain links still work.
+  // Sort, filter and "Show more" without reloading the page: "Show more" adds
+  // the next perfumes under the ones already showing; changing the sort or
+  // type swaps the whole list, updates the address bar and scrolls to the top
+  // of the collection. If anything goes wrong it falls back to a normal page
+  // load, and without JavaScript the plain links and the Apply button work.
   (function () {
     var grid = document.querySelector('.product-grid');
-    var pager = document.querySelector('.pagination');
+    var moreArea = document.querySelector('.load-more-area');
     var anchor = document.getElementById('collection');
-    if (!grid || !pager || !anchor || !window.fetch || !window.DOMParser) return;
+    if (!grid || !moreArea || !anchor || !window.fetch || !window.DOMParser) return;
 
     function key(url) {
       var u = new URL(url, window.location.href);
@@ -223,10 +224,11 @@
     }
 
     // Parts of the page that are swapped along with the grid: the heading
-    // (result count), the "Clear filters" link and the page numbers. The
-    // sort/filter form itself is never replaced, so keyboard focus stays put.
-    var SWAP = ['.catalog-header', '.filter-summary', '.pagination'];
+    // (result count), the "Clear filters" link and the "Showing N of M" area.
+    // The sort/filter form itself is never replaced, so keyboard focus stays.
+    var SWAP = ['.catalog-header', '.filter-summary', '.load-more-area'];
     var form = document.querySelector('[data-filter-bar]');
+    if (form) form.classList.add('is-live'); // controls apply instantly; hide the Apply button
 
     // Keep the form controls in step with the address (back/forward, Clear).
     function syncForm(url) {
@@ -235,8 +237,37 @@
       form.elements['sort'].value = p.get('sort') || 'newest';
       if (!form.elements['sort'].value) form.elements['sort'].value = 'newest';
       form.elements['type'].value = p.get('type') || '';
-      form.elements['min_price'].value = p.get('min_price') || '';
-      form.elements['max_price'].value = p.get('max_price') || '';
+    }
+
+    // "Show more": fetch the longer list, append only the perfumes that are
+    // new, and refresh the counter and button. The scroll position is left
+    // alone and the address is updated without adding a history entry, so a
+    // refresh or Back keeps everything already loaded.
+    function loadMore(link) {
+      if (link.classList.contains('is-loading')) return;
+      link.classList.add('is-loading');
+      link.textContent = 'Loading…';
+      var already = grid.querySelectorAll('.product-card').length;
+      fetch(link.href, { credentials: 'same-origin' })
+        .then(function (r) { if (!r.ok) throw new Error('bad status'); return r.text(); })
+        .then(function (html) {
+          var doc = new DOMParser().parseFromString(html, 'text/html');
+          var cards = doc.querySelectorAll('.product-grid .product-card');
+          var area = doc.querySelector('.load-more-area');
+          if (!area || cards.length <= already) throw new Error('unexpected page');
+          var added = [];
+          for (var i = already; i < cards.length; i++) {
+            var node = document.importNode(cards[i], true);
+            grid.appendChild(node);
+            added.push(node);
+          }
+          moreArea.innerHTML = area.innerHTML;
+          shown = key(link.href);
+          history.replaceState(history.state, '', link.href);
+          if (window.AromaReveal) window.AromaReveal.observe(grid);
+          if (added[0]) added[0].focus({ preventScroll: true }); // keyboard users continue from the first new perfume
+        })
+        .catch(function () { window.location.href = link.href; });
     }
 
     function load(url, push) {
@@ -279,10 +310,10 @@
     }
 
     document.addEventListener('click', function (e) {
-      var link = e.target.closest ? e.target.closest('.pagination a.page-btn, .filter-summary a.filter-clear, .empty-state a.filter-clear') : null;
+      var link = e.target.closest ? e.target.closest('.load-more, .filter-summary a.filter-clear, .empty-state a.filter-clear') : null;
       if (!link || e.defaultPrevented || e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
       e.preventDefault();
-      go(link.href);
+      if (link.classList.contains('load-more')) loadMore(link); else go(link.href);
     });
 
     if (form) {
@@ -290,17 +321,16 @@
         e.preventDefault();
         var url = new URL(form.getAttribute('action') || window.location.pathname, window.location.href);
         var data = new FormData(form);
-        ['q', 'sort', 'type', 'min_price', 'max_price'].forEach(function (name) {
+        ['q', 'sort', 'type'].forEach(function (name) {
           var value = String(data.get(name) || '').trim();
           if (!value || (name === 'sort' && value === 'newest')) return;
           url.searchParams.set(name, value);
         });
         go(url.toString());
       });
-      // Changing any control applies it straight away (the Apply button stays
-      // for anyone who prefers it, and for browsers without JavaScript).
+      // Changing a control applies it straight away. (The Apply button is only
+      // visible without JavaScript.)
       form.addEventListener('change', function () {
-        if (!form.reportValidity()) return;
         if (form.requestSubmit) form.requestSubmit(); else form.submit();
       });
     }
