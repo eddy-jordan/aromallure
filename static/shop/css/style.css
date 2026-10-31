@@ -548,16 +548,24 @@ input[type="number"], input[type="tel"] {
 .error-btn { width: auto; display: inline-block; padding: 0.75rem 2rem; margin-top: 1.5rem; text-decoration: none; }
 
 /* ── Homepage entrance: theatre curtains ──────────────────
-   Two black-velvet panels with gold trim part to reveal the shop while the
-   logo glows on the closed curtain and then fades. Plays once per visit
-   (the head script adds html.entrance-seen on later homepage views) and only
-   on the plain homepage. Everything is pure CSS (transforms and opacity on
-   a few layers, no images, no filters) so it stays smooth on phones.
-   Degrades safely: with prefers-reduced-motion the overlay is display:none,
-   and even if JavaScript never runs the animation ends in
+   Two black-velvet curtains hang under a gold scalloped valance. The logo
+   glows on the closed curtain (with the sale name when a sale is on), the
+   gold seam ignites, and the curtains gather into folds at the sides while
+   a sheen of light travels across the velvet and warm light spills through
+   the gap; then the valance lifts away. Plays once per visit (the head
+   script adds html.entrance-seen on later homepage views) and only on the
+   plain homepage. Built from CSS gradients plus transforms/opacity, with no
+   images. Degrades safely: with prefers-reduced-motion the overlay is
+   display:none, and even if JavaScript never runs the animation ends in
    visibility:hidden + pointer-events:none, so it can't block the page; the
    script in base.html only adds skipping and removes the element afterwards.
-   Timeline: logo in 0.15s, logo out 2.1s, curtains part 1.9s to 3.15s, overlay gone 3.2s. */
+   Timeline (H = 0.6s extra hold while a sale is on, 0 otherwise):
+     0.15s logo in      0.5s sale name in     1.45s+H seam ignites
+     1.9s+H curtains gather (1.45s)           1.65s+H logo and name lift away
+     2.95s+H valance lifts                    3.5s+H overlay gone          */
+html.has-sale-entrance { --hold: 0.6s; }
+:root { --open: calc(1.9s + var(--hold, 0s)); }
+
 .entrance-overlay {
   position: fixed;
   inset: 0;
@@ -569,16 +577,45 @@ input[type="number"], input[type="tel"] {
   overflow: hidden;
   cursor: pointer;
 }
-/* A thin gold rail along the top, like the pelmet of a stage curtain. */
+
+/* Warm light spilling through the gap while the curtains part. */
+.entrance-bloom {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 50%;
+  width: 70vw;
+  z-index: 0;
+  pointer-events: none;
+  opacity: 0;
+  transform: translateX(-50%) scaleX(0.08);
+  background: radial-gradient(ellipse at center, rgba(231, 196, 90, 0.55), rgba(201, 162, 39, 0.18) 38%, transparent 70%);
+}
+
+/* The valance: a velvet band with gold scallops hanging below it. */
 .entrance-overlay::before {
   content: '';
   position: absolute;
   top: 0;
   left: 0;
   right: 0;
-  height: 4px;
+  height: 30px;
   z-index: 3;
-  background: linear-gradient(90deg, transparent, #C9A227 25%, #E7C45A 50%, #C9A227 75%, transparent);
+  background: linear-gradient(180deg, #050403, #14110d);
+  border-bottom: 2px solid #C9A227;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.55);
+}
+.entrance-overlay::after {
+  content: '';
+  position: absolute;
+  top: 30px;
+  left: 0;
+  right: 0;
+  height: 20px;
+  z-index: 3;
+  background:
+    radial-gradient(circle at 50% 0, transparent 17px, #C9A227 17px, #C9A227 19px, transparent 19.5px) 0 0 / 40px 20px repeat-x,
+    radial-gradient(circle at 50% 0, #14110d 17px, transparent 17.5px) 0 0 / 40px 20px repeat-x;
 }
 
 .curtain {
@@ -587,22 +624,36 @@ input[type="number"], input[type="tel"] {
   bottom: 0;
   width: 50.4%; /* a hair of overlap so no seam of light shows when closed */
   z-index: 1;
+  overflow: hidden;
   background:
     linear-gradient(180deg, rgba(0, 0, 0, 0.4) 0%, transparent 16%, transparent 78%, rgba(0, 0, 0, 0.5) 100%),
     repeating-linear-gradient(90deg, #090806 0, #1e1a14 4.6%, #090806 9.2%, #090806 10.4%);
   box-shadow: inset 0 -22px 34px -22px rgba(201, 162, 39, 0.35);
 }
-.curtain--left  { left: 0; }
-.curtain--right { right: 0; }
-/* Gold trim down the edge where the two panels meet. */
+.curtain--left  { left: 0;  transform-origin: left center; }
+.curtain--right { right: 0; transform-origin: right center; }
+
+/* A band of light that sweeps across the velvet as it moves. */
+.curtain::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  transform: translateX(-130%);
+  background: linear-gradient(100deg, transparent 30%, rgba(231, 196, 90, 0.18) 44%, rgba(255, 244, 214, 0.1) 50%, transparent 64%);
+}
+
+/* Gold trim down the edge where the panels meet. It fades out behind the
+   logo and the sale name so it never cuts through the lettering. */
 .curtain::after {
   content: '';
   position: absolute;
   top: 0;
   bottom: 0;
   width: 2px;
-  background: linear-gradient(180deg, transparent, #C9A227 18%, #E7C45A 50%, #C9A227 82%, transparent);
   opacity: 0.85;
+  background: linear-gradient(180deg,
+    transparent 0, #C9A227 8%, #E7C45A 24%, rgba(201, 162, 39, 0) 33%,
+    rgba(201, 162, 39, 0) 67%, #E7C45A 76%, #C9A227 92%, transparent 100%);
 }
 .curtain--left::after  { right: 0; }
 .curtain--right::after { left: 0; }
@@ -636,6 +687,49 @@ input[type="number"], input[type="tel"] {
   opacity: 0;
 }
 
+/* The sale message: big gold type between two rules, with the date below. */
+.entrance-sale {
+  position: relative;
+  z-index: 4;
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  column-gap: 1.1rem;
+  width: min(88vw, 540px);
+  margin-top: 1.5rem;
+  opacity: 0;
+}
+.entrance-sale-rule {
+  height: 1px;
+  background: linear-gradient(90deg, transparent, #C9A227);
+  transform: scaleX(0);
+  transform-origin: right center;
+  opacity: 0;
+}
+.entrance-sale-rule:last-of-type {
+  background: linear-gradient(270deg, transparent, #C9A227);
+  transform-origin: left center;
+}
+.entrance-sale-name {
+  font-family: 'Playfair Display', serif;
+  font-weight: 600;
+  font-size: clamp(1.25rem, 4.8vw, 2.1rem);
+  letter-spacing: 0.26em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  color: #F2DC94;
+  text-shadow: 0 0 22px rgba(201, 162, 39, 0.6), 0 1px 0 rgba(0, 0, 0, 0.6);
+}
+.entrance-sale-when {
+  grid-column: 1 / -1;
+  margin-top: 0.8rem;
+  text-align: center;
+  font-size: clamp(0.72rem, 2.6vw, 0.9rem);
+  letter-spacing: 0.42em;
+  text-transform: uppercase;
+  color: #E4D8BE;
+}
+
 @keyframes splash-logo-in {
   0%   { opacity: 0; transform: scale(0.84) translateY(10px); }
   65%  { opacity: 1; transform: scale(1.025) translateY(0); }
@@ -650,23 +744,37 @@ input[type="number"], input[type="tel"] {
   0%   { transform: scaleX(0); opacity: 0; }
   100% { transform: scaleX(1); opacity: 1; }
 }
+@keyframes splash-fade-in {
+  0%   { opacity: 0; transform: translateY(8px); }
+  100% { opacity: 1; transform: translateY(0); }
+}
 @keyframes splash-fade-out {
   0%   { opacity: 1; }
   100% { opacity: 0; }
 }
-/* A tiny settle toward the middle, then the long glide apart. */
-@keyframes curtain-open-left {
-  0%   { transform: translateX(0); }
-  12%  { transform: translateX(1.2%); }
-  100% { transform: translateX(-103%); }
+/* The logo and sale name lift and dissolve as the curtains begin to part. */
+@keyframes splash-rise-out {
+  0%   { opacity: 1; transform: translateY(0) scale(1); }
+  100% { opacity: 0; transform: translateY(-14px) scale(1.04); }
 }
-@keyframes curtain-open-right {
-  0%   { transform: translateX(0); }
-  12%  { transform: translateX(-1.2%); }
-  100% { transform: translateX(103%); }
+/* The curtains gather into folds at the sides (the pleats bunch up as the
+   panel narrows) and then fade away. */
+@keyframes curtain-gather-left  { from { transform: translateX(0) scaleX(1); } to { transform: translateX(-6%) scaleX(0.13); } }
+@keyframes curtain-gather-right { from { transform: translateX(0) scaleX(1); } to { transform: translateX(6%) scaleX(0.13); } }
+@keyframes curtain-fade  { to { opacity: 0; } }
+@keyframes curtain-sheen { from { transform: translateX(-130%); } to { transform: translateX(140%); } }
+@keyframes seam-ignite {
+  from { opacity: 0.85; filter: drop-shadow(0 0 0 rgba(231, 196, 90, 0)); }
+  to   { opacity: 1;    filter: drop-shadow(0 0 7px rgba(231, 196, 90, 0.95)); }
 }
-@keyframes curtain-skip-left  { to { transform: translateX(-103%); } }
-@keyframes curtain-skip-right { to { transform: translateX(103%); } }
+@keyframes entrance-bloom {
+  0%   { opacity: 0; transform: translateX(-50%) scaleX(0.08); }
+  30%  { opacity: 1; }
+  100% { opacity: 0; transform: translateX(-50%) scaleX(1); }
+}
+@keyframes valance-up { to { transform: translateY(-60px); } }
+@keyframes curtain-skip-left  { to { transform: translateX(-6%) scaleX(0.1); opacity: 0; } }
+@keyframes curtain-skip-right { to { transform: translateX(6%) scaleX(0.1); opacity: 0; } }
 @keyframes entrance-done { to { visibility: hidden; pointer-events: none; } }
 @keyframes hero-reveal {
   0%   { opacity: 0; transform: translateY(16px); }
@@ -678,31 +786,47 @@ input[type="number"], input[type="tel"] {
 }
 
 @media (prefers-reduced-motion: no-preference) {
-  .entrance-overlay { animation: entrance-done 0.01s 3.2s forwards; }
-  .entrance-overlay::before { animation: splash-fade-out 0.5s 1.9s ease-in forwards; }
-  .curtain--left  { will-change: transform; animation: curtain-open-left 1.25s 1.9s cubic-bezier(0.76, 0, 0.2, 1) forwards; }
-  .curtain--right { will-change: transform; animation: curtain-open-right 1.25s 1.9s cubic-bezier(0.76, 0, 0.2, 1) forwards; }
+  .entrance-overlay { animation: entrance-done 0.01s calc(var(--open) + 1.6s) forwards; }
+  .entrance-overlay::before,
+  .entrance-overlay::after { animation: valance-up 0.5s calc(var(--open) + 1.05s) cubic-bezier(0.5, 0, 0.75, 0.3) forwards; }
+  .entrance-bloom { animation: entrance-bloom 1.5s var(--open) ease-out forwards; }
+
+  .curtain--left  { will-change: transform; animation: curtain-gather-left 1.45s var(--open) cubic-bezier(0.7, 0, 0.2, 1) forwards, curtain-fade 0.35s calc(var(--open) + 1.15s) ease-in forwards; }
+  .curtain--right { will-change: transform; animation: curtain-gather-right 1.45s var(--open) cubic-bezier(0.7, 0, 0.2, 1) forwards, curtain-fade 0.35s calc(var(--open) + 1.15s) ease-in forwards; }
+  .curtain::before { animation: curtain-sheen 1.25s calc(var(--open) + 0.1s) ease-in-out forwards; }
+  .curtain::after  { animation: seam-ignite 0.45s calc(var(--open) - 0.45s) ease-out forwards; }
+
   .entrance-logo-img {
     animation: splash-logo-in 0.9s 0.15s cubic-bezier(.21,.68,.27,1) forwards,
-               splash-fade-out 0.6s 2.1s ease-in forwards;
+               splash-rise-out 0.55s calc(var(--open) - 0.25s) ease-in forwards;
   }
   .splash-logo-wrap::before {
     animation: splash-glow 1.6s 0.15s ease-out forwards,
-               splash-fade-out 0.6s 2.1s ease-in forwards;
+               splash-fade-out 0.55s calc(var(--open) - 0.25s) ease-in forwards;
   }
   .entrance-line {
     animation: splash-line-draw 0.5s 0.9s ease-out forwards,
-               splash-fade-out 0.6s 2.1s ease-in forwards;
+               splash-fade-out 0.55s calc(var(--open) - 0.25s) ease-in forwards;
   }
-  .hero { animation: hero-reveal 0.8s 2.2s ease-out both; }
+  .entrance-sale {
+    animation: splash-fade-in 0.8s 0.5s ease-out forwards,
+               splash-rise-out 0.55s calc(var(--open) - 0.25s) ease-in forwards;
+  }
+  .entrance-sale-rule { animation: splash-line-draw 0.7s 0.8s ease-out forwards, splash-fade-out 0.55s calc(var(--open) - 0.25s) ease-in forwards; }
+  .hero { animation: hero-reveal 0.8s calc(var(--open) + 0.4s) ease-out both; }
 
   /* Skipped by a tap, a click or Escape: close the curtains quickly. */
   .entrance-overlay.is-skipped { animation: entrance-done 0.01s 0.6s forwards; }
   .entrance-overlay.is-skipped::before,
+  .entrance-overlay.is-skipped::after { animation: valance-up 0.35s ease-in forwards; }
+  .entrance-overlay.is-skipped .entrance-bloom,
+  .entrance-overlay.is-skipped .curtain::before,
   .entrance-overlay.is-skipped .entrance-logo-img,
   .entrance-overlay.is-skipped .entrance-line,
-  .entrance-overlay.is-skipped .entrance-bf,
+  .entrance-overlay.is-skipped .entrance-sale,
+  .entrance-overlay.is-skipped .entrance-sale-rule,
   .entrance-overlay.is-skipped .splash-logo-wrap::before { animation: splash-fade-out 0.25s ease-in forwards; }
+  .entrance-overlay.is-skipped .curtain::after { animation: none; }
   .entrance-overlay.is-skipped .curtain--left  { animation: curtain-skip-left 0.55s cubic-bezier(0.55, 0, 0.75, 0.2) forwards; }
   .entrance-overlay.is-skipped .curtain--right { animation: curtain-skip-right 0.55s cubic-bezier(0.55, 0, 0.75, 0.2) forwards; }
   html.entrance-skipped .hero { animation: hero-reveal-fast 0.5s 0.1s ease-out both; }
@@ -714,6 +838,20 @@ html.entrance-seen .hero { animation: none; }
 
 @media (prefers-reduced-motion: reduce) {
   .entrance-overlay { display: none; }
+}
+
+@media (max-width: 640px) {
+  .entrance-overlay::before { height: 22px; }
+  .entrance-overlay::after {
+    top: 22px;
+    height: 16px;
+    background:
+      radial-gradient(circle at 50% 0, transparent 13px, #C9A227 13px, #C9A227 15px, transparent 15.5px) 0 0 / 32px 16px repeat-x,
+      radial-gradient(circle at 50% 0, #14110d 13px, transparent 13.5px) 0 0 / 32px 16px repeat-x;
+  }
+  .entrance-sale { column-gap: 0.7rem; }
+  .entrance-sale-name { letter-spacing: 0.2em; }
+  @keyframes valance-up { to { transform: translateY(-44px); } }
 }
 
 /* ── Payment page ─────────────────────────────────────── */
@@ -1997,20 +2135,6 @@ input[type="number"], input[type="search"], textarea, select,
 }
 .hero--bf .bf-countdown { margin-bottom: 1.8rem; }
 
-.entrance-bf {
-  position: relative;
-  z-index: 4;
-  margin-top: 1rem;
-  font-size: 0.8rem;
-  letter-spacing: 0.4em;
-  text-transform: uppercase;
-  color: var(--gold);
-  opacity: 0;
-}
-@keyframes bf-tag-in { 0% { opacity: 0; transform: translateY(6px); } 100% { opacity: 1; transform: translateY(0); } }
-@media (prefers-reduced-motion: no-preference) {
-  .entrance-bf { animation: bf-tag-in 0.5s 0.9s ease-out forwards, splash-fade-out 0.6s 2.1s ease-in forwards; }
-}
 
 @media (max-width: 640px) {
   .bf-unit, .bf-unit b { min-width: 3rem; }

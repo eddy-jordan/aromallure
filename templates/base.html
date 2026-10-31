@@ -1,6 +1,6 @@
 {% load static %}
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en"{% if is_home and sale %} class="has-sale-entrance"{% endif %}>
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -53,13 +53,21 @@
 
   {% if is_home %}
   <div id="entrance-overlay" class="entrance-overlay" aria-hidden="true">
+    <span class="entrance-bloom"></span>
     <span class="curtain curtain--left"></span>
     <span class="curtain curtain--right"></span>
     <div class="splash-logo-wrap">
       <img src="{% static 'shop/img/logo-full.png' %}" alt="" class="entrance-logo-img">
     </div>
     <span class="entrance-line"></span>
-    {% if sale %}<span class="entrance-bf">{{ sale.name }}</span>{% endif %}
+    {% if sale %}
+    <div class="entrance-sale">
+      <span class="entrance-sale-rule"></span>
+      <span class="entrance-sale-name">{{ sale.name }}</span>
+      <span class="entrance-sale-rule"></span>
+      <span class="entrance-sale-when">{% if sale.phase == 'upcoming' %}{{ sale.start|date:"j F" }}{% else %}Live now{% endif %}</span>
+    </div>
+    {% endif %}
   </div>
   {% endif %}
 
@@ -313,7 +321,7 @@
       overlay.addEventListener('animationend', function (e) {
         if (e.target === overlay && e.animationName === 'entrance-done') remove();
       });
-      setTimeout(remove, 3800); // safety net
+      setTimeout(remove, 5200); // safety net
     })();
 
     // ── Black Friday countdown ────────────────────────────────
