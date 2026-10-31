@@ -1,0 +1,12 @@
+{% if brands %}
+<nav class="brand-strip" aria-label="Shop by brand" data-brand-strip data-reveal>
+  <span class="label-small brand-strip-label">Shop by brand</span>
+  <div class="brand-strip-chips">
+    <a href="{% url 'product_list' %}#collection" class="brand-chip{% if not current_brand %} is-current{% endif %}"{% if not current_brand %} aria-current="page"{% endif %}>All</a>
+    {% for b in brands %}
+    <a href="{% url 'brand_detail' b.slug %}#collection" class="brand-chip{% if current_brand and current_brand.slug == b.slug %} is-current{% endif %}"{% if current_brand and current_brand.slug == b.slug %} aria-current="page"{% endif %}>{{ b.name }} <span class="brand-chip-count">{{ b.count }}</span></a>
+    {% endfor %}
+  </div>
+  <button type="button" class="brand-strip-toggle" hidden aria-expanded="false">Show all brands</button>
+</nav>
+{% endif %}

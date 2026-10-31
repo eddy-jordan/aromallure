@@ -1,7 +1,8 @@
 {% extends 'base.html' %}
-{% block title %}{{ store_name }} — The Collection{% endblock %}
+{% block title %}{% if current_brand %}{{ current_brand.name }} — {{ store_name }}{% else %}{{ store_name }} — The Collection{% endif %}{% endblock %}
 {% block content %}
 
+{% if not current_brand %}
 {% if sale %}
 <section class="hero hero--bf{% if not is_home %} hero--instant{% endif %}">
   <div class="hero-inner">
@@ -62,6 +63,7 @@
     </div>
   </div>
 </section>
+{% endif %}
 
 <div class="page-container" id="collection">
   <div class="catalog-header" data-reveal>
@@ -71,6 +73,12 @@
         {{ products.paginator.count }} fragrance{{ products.paginator.count|pluralize }} found.
         <a href="{% url 'product_list' %}" style="margin-left:0.8rem; font-size:0.82rem;">Clear search &times;</a>
       </p>
+    {% elif current_brand %}
+      <h2>{{ current_brand.name }}</h2>
+      <p class="catalog-sub">
+        {{ products.paginator.count }} fragrance{{ products.paginator.count|pluralize }} from {{ current_brand.name }}.
+        <a href="{% url 'product_list' %}#collection" style="margin-left:0.8rem; font-size:0.82rem; white-space:nowrap;">All fragrances &rarr;</a>
+      </p>
     {% else %}
       <h2>The Collection</h2>
       <p class="catalog-sub">
@@ -79,6 +87,8 @@
       </p>
     {% endif %}
   </div>
+
+  {% if not query %}{% include 'shop/_brand_strip.html' %}{% endif %}
 
   <div class="product-grid">
     {% for product in products %}
@@ -249,6 +259,52 @@
     window.addEventListener('popstate', function () {
       if (key(window.location.href) !== shown) load(window.location.href, false);
     });
+  })();
+
+  // Brand strip: with many brands, show two rows and a "Show all brands"
+  // toggle. Without JavaScript every brand simply wraps onto as many rows as
+  // it needs.
+  (function () {
+    var strip = document.querySelector('[data-brand-strip]');
+    if (!strip) return;
+    var chips = strip.querySelector('.brand-strip-chips');
+    var toggle = strip.querySelector('.brand-strip-toggle');
+    var items = Array.prototype.slice.call(chips.children);
+    var expanded = false;
+
+    function layout() {
+      chips.style.maxHeight = '';
+      chips.classList.remove('is-clipped');
+      items.forEach(function (c) { c.removeAttribute('tabindex'); });
+      toggle.hidden = true;
+
+      var tops = [];
+      items.forEach(function (c) { if (tops.indexOf(c.offsetTop) === -1) tops.push(c.offsetTop); });
+      tops.sort(function (a, b) { return a - b; });
+      if (tops.length <= 2) return; // everything already fits in two rows
+
+      var current = chips.querySelector('.is-current');
+      if (current && current.offsetTop >= tops[2]) expanded = true; // never hide the highlighted brand
+
+      toggle.hidden = false;
+      toggle.textContent = expanded ? 'Show fewer' : 'Show all brands';
+      toggle.setAttribute('aria-expanded', String(expanded));
+      if (expanded) return;
+
+      var gap = parseFloat(getComputedStyle(chips).rowGap) || 8;
+      chips.style.maxHeight = (tops[2] - gap) + 'px';
+      chips.classList.add('is-clipped');
+      items.forEach(function (c) { if (c.offsetTop >= tops[2]) c.setAttribute('tabindex', '-1'); });
+    }
+
+    toggle.addEventListener('click', function () { expanded = !expanded; layout(); });
+    var resizeTimer;
+    window.addEventListener('resize', function () {
+      clearTimeout(resizeTimer);
+      resizeTimer = setTimeout(layout, 150);
+    });
+    layout();
+    if (document.fonts && document.fonts.ready) document.fonts.ready.then(layout);
   })();
 </script>
 {% endblock %}

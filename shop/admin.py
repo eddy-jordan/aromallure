@@ -1,9 +1,12 @@
+from django import forms
 from django.contrib import admin
 from django.contrib.auth.models import User, Group
 from django.contrib.auth.admin import UserAdmin, GroupAdmin
 from django.utils import timezone
+from django.utils.html import format_html, format_html_join
 from .models import Product, Order, OrderItem, Sale
 from .admin_site import aromallure_admin
+from .brands import brand_suggestions
 
 
 def mark_as_paid(modeladmin, request, queryset):
@@ -27,6 +30,18 @@ def mark_as_paid(modeladmin, request, queryset):
 mark_as_paid.short_description = '✓ Mark selected orders as Paid (manual MoMo confirmed)'
 
 
+class BrandSuggestInput(forms.TextInput):
+    """Brand text box with a drop-down of existing brands. Customers' brand pages
+    group products by brand name, so picking an existing spelling instead of
+    retyping it keeps one brand from splitting into several."""
+
+    def render(self, name, value, attrs=None, renderer=None):
+        attrs = {**(attrs or {}), 'list': 'brand-suggestions', 'autocomplete': 'off'}
+        box = super().render(name, value, attrs, renderer)
+        options = format_html_join('', '<option value="{}">', ((b,) for b in brand_suggestions()))
+        return format_html('{}<datalist id="brand-suggestions">{}</datalist>', box, options)
+
+
 class ProductAdmin(admin.ModelAdmin):
     list_display        = ['name', 'brand', 'price', 'sale_price', 'stock', 'concentration', 'is_active', 'created_at']
     list_filter         = ['brand', 'concentration', 'is_active']
@@ -36,6 +51,11 @@ class ProductAdmin(admin.ModelAdmin):
     fields              = ['name', 'slug', 'brand', 'description', 'scent_notes',
                            'concentration', 'volume_ml', 'price', 'sale_price', 'stock',
                            'image_url', 'image', 'is_active']
+
+    def formfield_for_dbfield(self, db_field, request, **kwargs):
+        if db_field.name == 'brand':
+            kwargs['widget'] = BrandSuggestInput(attrs={'class': 'vTextField', 'maxlength': 100})
+        return super().formfield_for_dbfield(db_field, request, **kwargs)
 
 
 class SaleAdmin(admin.ModelAdmin):

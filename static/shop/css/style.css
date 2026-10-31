@@ -2148,3 +2148,50 @@ a:focus-visible, button:focus-visible, [class*="btn"]:focus-visible, .brand:focu
   outline-offset: 3px;
 }
 .brand:focus-visible { outline-offset: 4px; border-radius: 8px; }
+
+/* ── Shop by brand ────────────────────────────────────── */
+.brand-strip { margin: 0 0 2.2rem; }
+.brand-strip-label { display: block; margin-bottom: 0.7rem; }
+/* The small padding + matching negative margin keep focus rings from being clipped. */
+.brand-strip-chips {
+  position: relative;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  padding: 4px;
+  margin: -4px;
+}
+.brand-strip-chips.is-clipped { overflow: hidden; }
+.brand-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0.42rem 0.9rem;
+  border: 1px solid var(--gold-soft);
+  border-radius: 999px;
+  color: var(--cream);
+  font-size: 0.8rem;
+  line-height: 1.2;
+  text-decoration: none;
+  white-space: nowrap;
+  transition: border-color 0.2s, color 0.2s, background 0.2s;
+}
+.brand-chip:hover { border-color: var(--gold); color: var(--gold); text-decoration: none; }
+.brand-chip.is-current,
+.brand-chip.is-current:hover { background: var(--gold); border-color: var(--gold); color: var(--bg); }
+.brand-chip-count { font-size: 0.68rem; opacity: 0.65; }
+.brand-strip-toggle {
+  all: unset;
+  display: inline-block;
+  margin-top: 0.7rem;
+  cursor: pointer;
+  font-size: 0.78rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--gold);
+}
+.brand-strip-toggle[hidden] { display: none; }
+.brand-strip-toggle:hover { text-decoration: underline; }
+@media (max-width: 640px) {
+  .brand-chip { padding: 0.38rem 0.75rem; font-size: 0.76rem; }
+}
