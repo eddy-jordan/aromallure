@@ -76,9 +76,12 @@
     {% elif current_brand %}
       <h2>{{ current_brand.name }}</h2>
       <p class="catalog-sub">
-        {{ products.paginator.count }} fragrance{{ products.paginator.count|pluralize }} from {{ current_brand.name }}.
+        {{ products.paginator.count }} fragrance{{ products.paginator.count|pluralize }} from {{ current_brand.name }}{% if filtering %} match your filters{% endif %}.
         <a href="{% url 'product_list' %}#collection" style="margin-left:0.8rem; font-size:0.82rem; white-space:nowrap;">All fragrances &rarr;</a>
       </p>
+    {% elif filtering %}
+      <h2>The Collection</h2>
+      <p class="catalog-sub">{{ products.paginator.count }} fragrance{{ products.paginator.count|pluralize }} match{{ products.paginator.count|pluralize:"es," }} your filters.</p>
     {% else %}
       <h2>The Collection</h2>
       <p class="catalog-sub">
@@ -89,6 +92,8 @@
   </div>
 
   {% if not query %}{% include 'shop/_brand_strip.html' %}{% endif %}
+
+  {% include 'shop/_filter_bar.html' %}
 
   <div class="product-grid">
     {% for product in products %}
@@ -128,21 +133,18 @@
       </div>
     </a>
     {% empty %}
+    {% if filtering %}
+    <p class="empty-state">No fragrances match these filters. <a href="{{ clear_url }}" class="filter-clear">Clear filters</a></p>
+    {% elif query %}
+    <p class="empty-state">No fragrances found for this search.</p>
+    {% else %}
     <p class="empty-state">No fragrances are available right now. Please check back soon.</p>
+    {% endif %}
     {% endfor %}
   </div>
 
-  {% if products.has_other_pages %}
-  <div class="pagination">
-    {% if products.has_previous %}
-      <a href="?{% if query %}q={{ query|urlencode }}&amp;{% endif %}page={{ products.previous_page_number }}#collection" class="page-btn">&larr; Previous</a>
-    {% endif %}
-    <span class="page-info">Page {{ products.number }} of {{ products.paginator.num_pages }}</span>
-    {% if products.has_next %}
-      <a href="?{% if query %}q={{ query|urlencode }}&amp;{% endif %}page={{ products.next_page_number }}#collection" class="page-btn">Next &rarr;</a>
-    {% endif %}
-  </div>
-  {% endif %}
+  {# Always rendered (empty when there is a single page) so the in-place page swap always has it to fill. #}
+  <nav class="pagination" aria-label="Pages">{% if products.has_other_pages %}{% if products.has_previous %}<a href="?{{ qs_prefix }}page={{ products.previous_page_number }}#collection" class="page-btn page-step" rel="prev" aria-label="Previous page"><span aria-hidden="true">&larr;</span><span class="page-step-label"> Previous</span></a>{% endif %}<div class="page-numbers">{% for p in page_range %}{% if p.gap %}<span class="page-gap" aria-hidden="true">&hellip;</span>{% elif p.current %}<span class="page-btn page-num is-current" aria-current="page" aria-label="Page {{ p.num }}, current page">{{ p.num }}</span>{% else %}<a href="?{{ qs_prefix }}page={{ p.num }}#collection" class="page-btn page-num" aria-label="Page {{ p.num }}">{{ p.num }}</a>{% endif %}{% endfor %}</div>{% if products.has_next %}<a href="?{{ qs_prefix }}page={{ products.next_page_number }}#collection" class="page-btn page-step" rel="next" aria-label="Next page"><span class="page-step-label">Next </span><span aria-hidden="true">&rarr;</span></a>{% endif %}{% endif %}</nav>
 
 </div>
 
@@ -220,6 +222,23 @@
       });
     }
 
+    // Parts of the page that are swapped along with the grid: the heading
+    // (result count), the "Clear filters" link and the page numbers. The
+    // sort/filter form itself is never replaced, so keyboard focus stays put.
+    var SWAP = ['.catalog-header', '.filter-summary', '.pagination'];
+    var form = document.querySelector('[data-filter-bar]');
+
+    // Keep the form controls in step with the address (back/forward, Clear).
+    function syncForm(url) {
+      if (!form) return;
+      var p = new URL(url, window.location.href).searchParams;
+      form.elements['sort'].value = p.get('sort') || 'newest';
+      if (!form.elements['sort'].value) form.elements['sort'].value = 'newest';
+      form.elements['type'].value = p.get('type') || '';
+      form.elements['min_price'].value = p.get('min_price') || '';
+      form.elements['max_price'].value = p.get('max_price') || '';
+    }
+
     function load(url, push) {
       grid.classList.add('is-paging');
       var scrolled = scrollToCollection();
@@ -227,34 +246,66 @@
         .then(function (r) { if (!r.ok) throw new Error('bad status'); return r.text(); })
         .then(function (html) {
           var doc = new DOMParser().parseFromString(html, 'text/html');
-          var newGrid = doc.querySelector('.product-grid');
-          var newPager = doc.querySelector('.pagination');
-          if (!newGrid || !newPager) throw new Error('unexpected page');
-          return { grid: newGrid, pager: newPager };
+          var next = { grid: doc.querySelector('.product-grid') };
+          if (!next.grid) throw new Error('unexpected page');
+          SWAP.forEach(function (sel) {
+            next[sel] = doc.querySelector(sel);
+            if (!next[sel]) throw new Error('unexpected page');
+          });
+          return next;
         });
       // Swap only after both the new page has arrived and the scroll has
       // finished; the new cards then fade in one after another in view.
       Promise.all([fetched, scrolled])
         .then(function (results) {
+          var next = results[0];
           if (window.AromaReveal) window.AromaReveal.forget(grid);
-          grid.innerHTML = results[0].grid.innerHTML;
-          pager.innerHTML = results[0].pager.innerHTML;
+          grid.innerHTML = next.grid.innerHTML;
+          SWAP.forEach(function (sel) { document.querySelector(sel).innerHTML = next[sel].innerHTML; });
           grid.classList.remove('is-paging');
           shown = key(url);
+          syncForm(url);
           if (push) history.pushState({ collection: true }, '', url);
           if (window.AromaReveal) window.AromaReveal.observe(grid);
         })
         .catch(function () { window.location.href = url; });
     }
 
+    // Go to a new view in place; a request for the view already showing just
+    // scrolls back to the collection.
+    function go(url) {
+      if (key(url) === shown) { scrollToCollection(); return; }
+      load(url, true);
+    }
+
     document.addEventListener('click', function (e) {
-      var link = e.target.closest ? e.target.closest('.pagination a.page-btn') : null;
+      var link = e.target.closest ? e.target.closest('.pagination a.page-btn, .filter-summary a.filter-clear, .empty-state a.filter-clear') : null;
       if (!link || e.defaultPrevented || e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
       e.preventDefault();
-      load(link.href, true);
+      go(link.href);
     });
 
-    // Browser back/forward between pages. Ignore hash-only changes (e.g. the
+    if (form) {
+      form.addEventListener('submit', function (e) {
+        e.preventDefault();
+        var url = new URL(form.getAttribute('action') || window.location.pathname, window.location.href);
+        var data = new FormData(form);
+        ['q', 'sort', 'type', 'min_price', 'max_price'].forEach(function (name) {
+          var value = String(data.get(name) || '').trim();
+          if (!value || (name === 'sort' && value === 'newest')) return;
+          url.searchParams.set(name, value);
+        });
+        go(url.toString());
+      });
+      // Changing any control applies it straight away (the Apply button stays
+      // for anyone who prefers it, and for browsers without JavaScript).
+      form.addEventListener('change', function () {
+        if (!form.reportValidity()) return;
+        if (form.requestSubmit) form.requestSubmit(); else form.submit();
+      });
+    }
+
+    // Browser back/forward between views. Ignore hash-only changes (e.g. the
     // "Shop the Collection" button), which also fire popstate.
     window.addEventListener('popstate', function () {
       if (key(window.location.href) !== shown) load(window.location.href, false);

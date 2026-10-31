@@ -6,6 +6,7 @@ from django.views.decorators.http import require_POST
 from django.db import transaction
 from django.http import Http404
 from .brands import brand_groups
+from .catalog import CATALOG_PARAMS, catalog_context
 from .forms import SignUpForm, CheckoutForm
 from .models import Product, Order, OrderItem
 from .cart import Cart
@@ -32,8 +33,7 @@ def signup_view(request):
 
 
 def product_list_view(request):
-    """Product catalog with search and pagination — 12 products per page."""
-    from django.core.paginator import Paginator
+    """Product catalog with search, sorting, filters and numbered pages."""
     from django.db.models import Q
 
     query    = request.GET.get('q', '').strip()
@@ -47,45 +47,40 @@ def product_list_view(request):
             Q(description__icontains=query)
         )
 
-    paginator   = Paginator(products_qs, 12)
-    page_number = request.GET.get('page', 1)
-    products    = paginator.get_page(page_number)
-
-    return render(request, 'shop/product_list.html', {
-        'products': products,
-        # Entrance animation only on a true first visit, not when searching
-        # or paging through the collection.
-        'is_home':  not query and 'page' not in request.GET,
+    context = catalog_context(request, products_qs, query=query)
+    context.update({
+        # Entrance animation only on a true first visit, not when searching,
+        # sorting, filtering or paging through the collection.
+        'is_home':  not (set(request.GET) & CATALOG_PARAMS),
         'query':    query,
         'brands':   [] if query else brand_groups(),
         'current_brand': None,
     })
+    return render(request, 'shop/product_list.html', context)
 
 
 def brand_view(request, slug):
-    """Every active perfume of one brand, using the same grid and paging as the
-    collection. 404s for a brand with no active products."""
-    from django.core.paginator import Paginator
-
+    """Every active perfume of one brand, using the same grid, filters and paging
+    as the collection. 404s for a brand with no active products."""
     brands  = brand_groups()
     current = next((b for b in brands if b['slug'] == slug), None)
     if current is None:
         raise Http404("No such brand")
 
     products_qs = Product.objects.filter(is_active=True, brand__in=current['raw'])
-    products    = Paginator(products_qs, 12).get_page(request.GET.get('page', 1))
 
     # Show the brand being viewed first in the strip so it is always in the
     # visible rows (the rest stay A to Z), even when the strip is collapsed.
     strip = [current] + [b for b in brands if b['slug'] != slug]
 
-    return render(request, 'shop/product_list.html', {
-        'products': products,
+    context = catalog_context(request, products_qs)
+    context.update({
         'is_home':  False,
         'query':    '',
         'brands':   strip,
         'current_brand': current,
     })
+    return render(request, 'shop/product_list.html', context)
 
 
 def product_detail_view(request, slug):
