@@ -81,7 +81,9 @@ class OrderItemInline(admin.TabularInline):
     readonly_fields = ['product_name', 'unit_price', 'subtotal']
 
     def subtotal(self, obj):
-        return obj.subtotal
+        # The "add another item" row is a blank OrderItem with no price yet;
+        # computing its subtotal used to crash every order page with a 500.
+        return obj.subtotal if obj.unit_price is not None else '-'
 
 
 class OrderAdmin(admin.ModelAdmin):
